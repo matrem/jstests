@@ -1,7 +1,4 @@
-let earthMass_kg = 5.972e24;
-let earthRadius_m = 6371e3;
-let time_s = 0;
-
+//Inputs
 let thrustInput = document.getElementById("thrust");
 let s0Input = document.getElementById("s0");
 let scaleXInput = document.getElementById("sx");
@@ -21,32 +18,12 @@ let rocketMassInput = document.getElementById("m");
 let rocketSectionAreadInput = document.getElementById("sa");
 let rocketDragCoeffInput = document.getElementById("dc");
 
-let started = false;
-let rocket;
-
+//global variables
 let scaleX = 1;
 let scaleY = 1;
-let timeScale = 1;
-let integrationStep_s = 1e-2;
-
-let rocketMass_kg = 100;
-let rocketDragCoeff = 0.75;
-let rocketSectionArea_m2 = 1;
-
-initRocket = function () {
-	rocket = new physx.Object(
-		{
-			position: new math.Vector(0, 0, 0)
-			, velocity: new math.Vector(0, 0, parseFloat(s0Input.value))
-			, maxSpeed: undefined
-			, acceleration: new math.Vector(0, 0, 0)
-			, mass: rocketMass_kg
-		}
-	);
-}
 
 plotRocket = function () {
-	return new math.Vector(time_s * scaleX, drawing.height - scaleY * rocket.position.z);
+	return new math.Vector(time_s * scaleX, drawing.height - scaleY * simulation.rocket.position.z);
 }
 
 monitorIndex = 0;
@@ -60,153 +37,78 @@ plotMonitor = function () {
 	return plot;
 }
 
-//Simulation
-forceIntegration = function () {
-	let force = new math.Vector(0, 0, 0);
-
-	//Thrust
-	let thrust = parseFloat(thrustInput.value);
-	if (thrust > 0) {
-		force = force.add(new math.Vector(0, 0, thrust));
-	}
-
-	//Gravity
-	let g = physx.gravity({
-		m0: rocket.mass
-		, m1: physx.earth.mass_kg
-		, p0: new math.Vector(0, 0, physx.earth.radius_m + rocket.position.z)
-		, p1: new math.Vector(0, 0, 0)
-	})
-
-	force = force.add(g);
-
-	//Atmospheric drag
-	let drag = rocket.velocity.null();
-
-	if (rocketDragCoeff > 0 && rocketSectionArea_m2 > 0) {
-		let atmosphericDensity_kgpm3 = physx.earth.atmosphericDensityFunc_m_kgpm3(rocket.position.z);
-		drag = physx.drag({
-			fluidDendity_kgpm3: atmosphericDensity_kgpm3
-			, velocity_mps: rocket.velocity
-			, dragCoeff: rocketDragCoeff
-			, area_m2: rocketSectionArea_m2
-		});
-
-		force = force.add(drag);
-	}
-
-	rocket.applyForce(force);
-
-	if (rocket.acceleration.z != rocket.acceleration.z) {
-		alert("nan");
-	}
-
-	return { g: g, drag: drag };
-}
-
-computeCollision = function () {
-	if (rocket.position.z < 0) {
-		rocket.position.z = 0;
-		rocket.velocity = rocket.velocity.null();
-	}
-}
-
-let monitorRatio = 0;
-
-simulation = new physx.Simulation(
-	{
-		initCallback: () => {
-			timeInput.value = "";
-			timeInput_hr.value = "";
-			vsInput.value = "";
-			altitudeInput.value = "";
-			altitudeInput_km3.value = "";
-			gravityAccellInput.value = "";
-			gravityAccellInput.value = "";
-		}
-		, simulateCallback: (dt_s) => {
-			timeScale = parseFloat(timeScaleInput.value);
-			if (timeScale > 0) {
-				dt_s *= timeScale;
-			}
-
-			let integrationCount = Math.max(Math.round(dt_s / integrationStep_s), 1);
-			dt_s = dt_s / integrationCount;
-
-			let forces;
-
-			for (s = 0; s < integrationCount; ++s) {
-				forces = forceIntegration();
-				if (forces.g.z != forces.g.z) {
-					alert("nan");
-				}
-				rocket.update(dt_s);
-				if (rocket.position.z != rocket.position.z) {
-					alert("nan");
-				}
-				computeCollision();
-			}
-
-			time_s += dt_s * integrationCount;
-
-			timeInput.value = Math.round(time_s);
-			timeInput_hr.value = Math.round(time_s / 3600.0 * 1e2) / 1e2;
-			vsInput.value = Math.round(rocket.velocity.z * 1e2) / 1e2;
-			altitudeInput.value = Math.round(rocket.position.z) / 1e3;
-			altitudeInput_km3.value = Math.round(rocket.position.z / 1e3) / 1e3;
-			gravityAccellInput.value = Math.round(forces.g.z / rocket.mass * 1e3) / 1e3;
-			dragAccellInput.value = Math.round(forces.drag.z / rocket.mass * 1e3) / 1e3;
-		}
-
-		, simulationStepEndCallback: (dt_s, duration_s) => {
-			monitorRatio = duration_s / dt_s;
-		}
-	}
-)
-
 //Drawing
-
 drawing = new draw.Drawing(
 	{
 		id: "canvas"
-		, autoClear: false
 		, initializeCallback: (ctx) => {
 			ctx.fillStyle = "rgb(200, 0, 0)";
 			ctx.lineWidth = 3;
-
-			// for ()
-			// 	new draw.Line({
-			// 		p0: new math.Vector()
-			// 		, p1: plotRocket()
-			// 	}).stroke(drawing.context);
-		}
-		, updateCallback: () => {
-			if (started) {
-				let p0 = plotRocket();
-				let m0 = plotMonitor();
-
-				simulation.update();
-
-				new draw.Line({
-					p0: p0
-					, p1: plotRocket()
-				}).stroke(drawing.context);
-
-				new draw.Line({
-					p0: m0
-					, p1: plotMonitor()
-				}).stroke(monitor.context);
-			}
 		}
 	}
 )
 
 monitor = new draw.Drawing({
 	id: "scp"
-	, autoClear: false
 	, initializeCallback: (ctx) => {
 		ctx.strokeStyle = "rgb(200, 0, 0)";
 		ctx.lineWidth = 3;
+	}
+})
+
+//Simulation
+
+let monitorRatio = 0;
+let time_s = 0;
+
+simulation = new RocketSimulation();
+
+work = new task.Work({
+	initCallback: () => {
+		timeInput.value = "";
+		timeInput_hr.value = "";
+		vsInput.value = "";
+		altitudeInput.value = "";
+		altitudeInput_km3.value = "";
+		gravityAccellInput.value = "";
+		gravityAccellInput.value = "";
+	}
+	, updateStartCallback: () => {
+		simulation.timeScale = parseFloat(timeScaleInput.value);
+		simulation.integrationStep_s = parseFloat(timeStepInput.value);
+		simulation.rocket.mass = parseFloat(rocketMassInput.value)
+		simulation.sectionArea_m2 = parseFloat(rocketSectionAreadInput.value)
+		simulation.dragCoeff = parseFloat(rocketDragCoeffInput.value)
+	}
+	, updateCallback: (dt_s) => {
+		let p0 = plotRocket();
+
+		dt_s = simulation.simulate(dt_s);
+		time_s += dt_s;
+
+		new draw.Line({
+			p0: p0
+			, p1: plotRocket()
+		}).stroke(drawing.context);
+	}
+	, updateEndCallback: (dt_s, duration_s) => {
+		//Update inputs
+		timeInput.value = Math.round(time_s);
+		timeInput_hr.value = Math.round(time_s / 3600.0 * 1e2) / 1e2;
+		vsInput.value = Math.round(simulation.rocket.velocity.z * 1e2) / 1e2;
+		altitudeInput.value = Math.round(simulation.rocket.position.z) / 1e3;
+		altitudeInput_km3.value = Math.round(simulation.rocket.position.z / 1e3) / 1e3;
+		gravityAccellInput.value = Math.round(simulation.forces.gravity.z / simulation.rocket.mass * 1e3) / 1e3;
+		dragAccellInput.value = Math.round(simulation.forces.drag.z / simulation.rocket.mass * 1e3) / 1e3;
+
+		//Update monitor
+		let m0 = plotMonitor();
+		monitorRatio = duration_s / dt_s;
+
+		new draw.Line({
+			p0: m0
+			, p1: plotMonitor()
+		}).stroke(monitor.context);
 	}
 })
 
@@ -215,15 +117,18 @@ start = function () {
 
 	scaleX = parseFloat(scaleXInput.value);
 	scaleY = parseFloat(scaleYInput.value);
-	integrationStep_s = parseFloat(timeStepInput.value);
-	rocketMass_kg = parseFloat(rocketMassInput.value);
-	rocketSectionArea_m2 = parseFloat(rocketSectionAreadInput.value);
-	rocketDragCoeff = parseFloat(rocketDragCoeffInput.value);
 
-	initRocket();
+	simulation.reset({
+		initialSpeed: parseFloat(s0Input.value)
+		, initialMass_kg: parseFloat(rocketMassInput.value)
+	});
 
 	time_s = 0;
-	started = true;
+	work.start();
+}
+
+stop = function () {
+	work.stop();
 }
 
 clean = function () {

@@ -16,11 +16,8 @@ let draw = {
 	}
 
 	, Drawing: class {
-		constructor({ id, initializeCallback, updateCallback, mouseMoveCallback, autoClear = true, autoUpdate = true }) {
+		constructor({ id, initializeCallback, mouseMoveCallback }) {
 			this.canvas = document.getElementById(id);
-			this.updateCallback = updateCallback;
-			this.autoClear = autoClear;
-			this.autoUpdate = autoUpdate;
 
 			if (this.canvas.getContext) {
 				this.context = this.canvas.getContext("2d");
@@ -28,8 +25,6 @@ let draw = {
 				initializeCallback(this.context);
 
 				this.canvas.onmousemove = mouseMoveCallback;
-
-				if (this.autoUpdate) window.requestAnimationFrame(this.update.bind(this));
 			}
 			else {
 				alert("Can't get " + id + "canvas 2d context");
@@ -40,12 +35,6 @@ let draw = {
 			this.context.clearRect(
 				0, 0, this.context.canvas.width, this.context.canvas.height
 			);
-		}
-
-		update() {
-			if (this.autoClear) this.clear();
-			if (this.updateCallback != undefined) this.updateCallback();
-			if (this.autoUpdate) window.requestAnimationFrame(this.update.bind(this));
 		}
 
 		get width() { return this.context.canvas.width }

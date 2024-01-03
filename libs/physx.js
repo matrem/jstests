@@ -51,24 +51,26 @@ let physx = {
 	},
 
 	Simulation: class {
-		constructor({ initCallback, simulateCallback, simulationStepEndCallback }) {
-			this.simulateCallback = simulateCallback;
-			if (initCallback != undefined) initCallback();
-			this.simulationStepEndCallback = simulationStepEndCallback;
-		}
+		timeScale = 1.0;
+		integrationStep_s = 10;
 
-		// compute dt in seconds and call the given simulation callback
-		update() {
-			const now_ms = window.performance.now();
-
-			if (this.previousNow_ms != undefined) {
-				const dt_ms = now_ms - this.previousNow_ms;
-				this.simulateCallback(dt_ms / 1000.0);
-				let duration_ms = window.performance.now() - now_ms;
-				if (this.simulationStepEndCallback != undefined) this.simulationStepEndCallback(dt_ms / 1e3, duration_ms / 1e3);
+		simulate(dt_s) {
+			if (this.timeScale > 0) {
+				dt_s *= this.timeScale;
 			}
 
-			this.previousNow_ms = now_ms;
+			let integrationCount = 1;
+			if (this.integrationStep_s > 0) {
+				integrationCount = Math.max(Math.round(dt_s / this.integrationStep_s), 1);
+			}
+
+			dt_s = dt_s / integrationCount;
+
+			for (let s = 0; s < integrationCount; ++s) {
+				this.simulateCallback(dt_s);
+			}
+
+			return dt_s * integrationCount;
 		}
 	}
 
