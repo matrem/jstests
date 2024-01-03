@@ -41,11 +41,11 @@ RocketSimulation = class extends physx.Simulation {
 		//Thrust
 		let thrust = new math.Vector(0, 0, 0);
 
-		if (thrust > 0) {
-			thrust = new math.Vector(0, 0, thrust);
+		if (this.thrust > 0) {
+			thrust = new math.Vector(0, 0, this.thrust);
 		}
 
-		force.add(thrust);
+		force = force.add(thrust);
 
 		//Gravity
 		let g = physx.gravity({

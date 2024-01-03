@@ -56,9 +56,10 @@ work = new task.Work({
 	, updateStartCallback: () => {
 		simulation.timeScale = parseFloat(timeScaleInput.value);
 		simulation.integrationStep_s = parseFloat(timeStepInput.value);
-		simulation.rocket.mass = parseFloat(rocketMassInput.value)
-		simulation.sectionArea_m2 = parseFloat(rocketSectionAreadInput.value)
-		simulation.dragCoeff = parseFloat(rocketDragCoeffInput.value)
+		simulation.rocket.mass = parseFloat(rocketMassInput.value);
+		simulation.sectionArea_m2 = parseFloat(rocketSectionAreadInput.value);
+		simulation.dragCoeff = parseFloat(rocketDragCoeffInput.value);
+		simulation.thrust = parseFloat(thrustInput.value);
 	}
 	, updateCallback: (dt_s) => {
 		let p0 = plotRocket();
