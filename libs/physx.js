@@ -51,21 +51,24 @@ let physx = {
 	},
 
 	Simulation: class {
-		constructor({ initCallback, simulateCallback }) {
+		constructor({ initCallback, simulateCallback, simulationStepEndCallback }) {
 			this.simulateCallback = simulateCallback;
 			if (initCallback != undefined) initCallback();
+			this.simulationStepEndCallback = simulationStepEndCallback;
 		}
 
 		// compute dt in seconds and call the given simulation callback
 		update() {
-			const now = window.performance.now();
+			const now_ms = window.performance.now();
 
-			if (this.previousNow != undefined) {
-				const dt_s = now - this.previousNow;
-				this.simulateCallback(dt_s / 1000.0);
+			if (this.previousNow_ms != undefined) {
+				const dt_ms = now_ms - this.previousNow_ms;
+				this.simulateCallback(dt_ms / 1000.0);
+				let duration_ms = window.performance.now() - now_ms;
+				if (this.simulationStepEndCallback != undefined) this.simulationStepEndCallback(dt_ms / 1e3, duration_ms / 1e3);
 			}
 
-			this.previousNow = now;
+			this.previousNow_ms = now_ms;
 		}
 	}
 
@@ -92,7 +95,11 @@ let physx = {
 		const s2 = direction.length2();
 		if (s2 > 0) {
 			direction = direction.normalize();
-			return direction.mul(0.5 * fluidDendity_kgpm3 * s2 * dragCoeff * area_m2);
+			let scalar = 0.5 * fluidDendity_kgpm3 * s2 * dragCoeff * area_m2;
+			if (scalar != scalar) {
+				alert("nan");
+			}
+			return direction.mul(scalar);
 		}
 		return direction.null();
 	}
@@ -102,6 +109,7 @@ let physx = {
 		, -0.38
 		, -1.03
 		, -1.75
+		, -2.40
 		, -2.97
 		, -3.49
 		, -4.05
@@ -126,7 +134,7 @@ physx.earth = new physx.Planet(
 		, atmosphericDensityFunc_m_kgpm3: altitude_m => {
 			// https://www.spaceacademy.net.au/watch/debris/atmosmod.htm
 			let aCell = altitude_m / 10e3;
-			if (aCell <= physx.earthAtmosphericDensity_log10by10km.length) {
+			if (aCell < physx.earthAtmosphericDensity_log10by10km.length - 1) {
 				let bottomCell = Math.floor(aCell);
 				let upCell = bottomCell + 1;
 				let cursor = (aCell - bottomCell);
@@ -135,16 +143,27 @@ physx.earth = new physx.Planet(
 				let upValue = physx.earthAtmosphericDensity_log10by10km[upCell];
 				let valueDelta = upValue - bottomValue;
 
-				return Math.pow(10, bottomValue + cursor * valueDelta);
+				let p = Math.pow(10, bottomValue + cursor * valueDelta);
+
+				if (p != p) {
+					alert("nan");
+				}
+
+				return p;
 			}
 			else {
-				let Ap = 0;
-				let F10 = (70 + 300) / 2.0;
-				let T = 900 + 2.5 * (F10 - 70) + 1.5 * Ap;
-				let h = (altitude_m / 1e3);
-				let u = 27 - 0.012 * (h - 200);
-				let H = T / u;
-				return 6e-10 * Math.exp(-1 * (h - 175) / H);
+				if (altitude_m < 500e3) {
+					let Ap = 0;
+					let F10 = (70 + 300) / 2.0;
+					let T = 900 + 2.5 * (F10 - 70) + 1.5 * Ap;
+					let h = (altitude_m / 1e3);
+					let u = 27 - 0.012 * (h - 200);
+					let H = T / u;
+					return 6e-10 * Math.exp(-1 * (h - 175) / H);
+				}
+				else {
+					return 0;
+				}
 			}
 		}
 	})

@@ -10,16 +10,17 @@ let draw = {
 		}
 
 		stroke(ctx) {
-			ctx.strokeStyle = this.color;
+			if (this.color != undefined) ctx.strokeStyle = this.color;
 			ctx.stroke(this.path);
 		}
 	}
 
 	, Drawing: class {
-		constructor({ id, initializeCallback, animateCallback, mouseMoveCallback, autoClear = true }) {
+		constructor({ id, initializeCallback, updateCallback, mouseMoveCallback, autoClear = true, autoUpdate = true }) {
 			this.canvas = document.getElementById(id);
-			this.animateCallback = animateCallback;
+			this.updateCallback = updateCallback;
 			this.autoClear = autoClear;
+			this.autoUpdate = autoUpdate;
 
 			if (this.canvas.getContext) {
 				this.context = this.canvas.getContext("2d");
@@ -28,7 +29,7 @@ let draw = {
 
 				this.canvas.onmousemove = mouseMoveCallback;
 
-				window.requestAnimationFrame(this.animate.bind(this));
+				if (this.autoUpdate) window.requestAnimationFrame(this.update.bind(this));
 			}
 			else {
 				alert("Can't get " + id + "canvas 2d context");
@@ -41,10 +42,10 @@ let draw = {
 			);
 		}
 
-		animate() {
+		update() {
 			if (this.autoClear) this.clear();
-			this.animateCallback();
-			window.requestAnimationFrame(this.animate.bind(this));
+			if (this.updateCallback != undefined) this.updateCallback();
+			if (this.autoUpdate) window.requestAnimationFrame(this.update.bind(this));
 		}
 
 		get width() { return this.context.canvas.width }

@@ -18,6 +18,10 @@
 	</div>
 	<div id="fields">
 		<div class="field">
+			<label>thrust (N)</label>
+			<input type="number" id="thrust" value="0"></input>
+		</div>
+		<div class="field">
 			<label>initial vertical speed (m.s-1)</label>
 			<input type="number" id="s0" value="11.5e3"></input>
 		</div>
@@ -33,14 +37,18 @@
 			<label>time scale</label>
 			<input type="number" id="st" value="1e3"></input>
 		</div>
+		<div class="field">
+			<label>time step (s)</label>
+			<input type="number" id="ts" value="1e-2"></input>
+		</div>
 
 		<div class="field">
 			<label>rocket mass (kg)</label>
-			<input type="number" id="m" value="1000"></input>
+			<input type="number" id="m" value="1000e3"></input>
 		</div>
 		<div class="field">
 			<label>rocket section area (m2)</label>
-			<input type="number" id="sa" value="1"></input>
+			<input type="number" id="sa" value="40"></input>
 		</div>
 		<div class="field">
 			<label>rocket drag coeff</label>
@@ -50,11 +58,19 @@
 		<button onclick="start()">start</button>
 		<button onclick="clean()">clear</button>
 
-		<div class="field"><label>time (s)</label><input id="t" readonly="true" /></div>
-		<div class="field"><label>dt (s)</label><input id="dt" readonly="true" /></div>
+		<div class="field">
+			<label>time (s) (hr)</label><input id="t" readonly="true" /><input id="t_hr" readonly="true" />
+		</div>
+		<div class="field"><label>step compute %</label><canvas id="scp" width="220px" height="50px" /></div>
+
 		<div class="field"><label>vertical speed (m.s-1)</label><input id="vs" readonly="true" /></div>
-		<div class="field"><label>altitude (km)</label><input id="z" readonly="true" /></div>
+		<div class="field">
+			<label>altitude (km) (km3)</label>
+			<input id="z" readonly="true" />
+			<input id="z_km3" readonly="true" />
+		</div>
 		<div class="field"><label>gravity accelleration (m.s-2)</label><input id="gz" readonly="true" /></div>
+		<div class="field"><label>drag accelleration (m.s-2)</label><input id="dz" readonly="true" /></div>
 	</div>
 </body>
 
