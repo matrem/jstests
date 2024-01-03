@@ -26,16 +26,7 @@ plotRocket = function () {
 	return new math.Vector(time_s * scaleX, drawing.height - scaleY * simulation.rocket.position.z);
 }
 
-monitorIndex = 0;
-plotMonitor = function () {
-	let plot = new math.Vector(monitorIndex, monitor.height * (1 - monitorRatio));
-	++monitorIndex;
-	if (monitorIndex >= monitor.width) {
-		monitorIndex = 0;
-		monitor.clear();
-	}
-	return plot;
-}
+monitorDrawing = new monitor.Drawing({ id: "scp" });
 
 //Drawing
 drawing = new draw.Drawing(
@@ -48,17 +39,6 @@ drawing = new draw.Drawing(
 	}
 )
 
-monitor = new draw.Drawing({
-	id: "scp"
-	, initializeCallback: (ctx) => {
-		ctx.strokeStyle = "rgb(200, 0, 0)";
-		ctx.lineWidth = 3;
-	}
-})
-
-//Simulation
-
-let monitorRatio = 0;
 let time_s = 0;
 
 simulation = new RocketSimulation();
@@ -102,13 +82,7 @@ work = new task.Work({
 		dragAccellInput.value = Math.round(simulation.forces.drag.z / simulation.rocket.mass * 1e3) / 1e3;
 
 		//Update monitor
-		let m0 = plotMonitor();
-		monitorRatio = duration_s / dt_s;
-
-		new draw.Line({
-			p0: m0
-			, p1: plotMonitor()
-		}).stroke(monitor.context);
+		monitorDrawing.plotRatio(duration_s / dt_s);
 	}
 })
 
