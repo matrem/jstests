@@ -3,11 +3,11 @@ let task = {
 	Work: class {
 		#started = false;
 
-		constructor({ initCallback, updateCallback, updateStartCallback, updateEndCallback }) {
+		constructor({ initializeCallback, updateCallback, updateStartCallback, updateEndCallback }) {
 			this.updateCallback = updateCallback;
 			this.updateStartCallback = updateStartCallback;
 			this.updateEndCallback = updateEndCallback;
-			if (initCallback != undefined) initCallback();
+			if (initializeCallback != undefined) initializeCallback();
 		}
 
 		start() {

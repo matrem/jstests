@@ -5,7 +5,7 @@ RocketSimulation = class extends physx.Simulation {
 	#sectionArea_m2 = 40;
 
 	constructor() {
-		super();
+		super({ simulateCallback: undefined });
 
 		this.simulateCallback = this.simulateRocket;
 

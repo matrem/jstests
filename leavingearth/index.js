@@ -44,7 +44,7 @@ let time_s = 0;
 simulation = new RocketSimulation();
 
 work = new task.Work({
-	initCallback: () => {
+	initializeCallback: () => {
 		timeInput.value = "";
 		timeInput_hr.value = "";
 		vsInput.value = "";

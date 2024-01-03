@@ -59,6 +59,8 @@ simulation = new physx.Simulation({
 //Drawing
 
 function drawTargetAndChasers() {
+	drawing.clear();
+
 	new draw.Circle({
 		color: "rgb(200, 0, 0)"
 		, position: target.position
@@ -81,42 +83,47 @@ drawing = new draw.Drawing({
 		ctx.strokeStyle = "rgb(200, 0, 0)";
 		ctx.lineWidth = 3;
 	}
-	, animateCallback: () => { //Animate
-		simulation.update();
-		drawTargetAndChasers();
-	}
 	, mouseMoveCallback: (event) => { //MouseMove
 		mouse.x = event.clientX;
 		mouse.y = event.clientY;
 	}
 })
 
-// InitializeRandomChasers
-for (c = 0; c < chaserCount; ++c) {
-	x = Math.random() * drawing.width;
-	y = Math.random() * drawing.height;
+task = new task.Work({
+	initializeCallback: () => {
+		for (c = 0; c < chaserCount; ++c) {
+			x = Math.random() * drawing.width;
+			y = Math.random() * drawing.height;
 
-	chasers.push(
-		new physx.Object(
-			{
-				position: new math.Vector(x, y)
-				, velocity: new math.Vector(0, 0)
-				, maxSpeed: 300
-				, acceleration: new math.Vector(0, 0)
-			}
-		)
-	);
+			chasers.push(
+				new physx.Object(
+					{
+						position: new math.Vector(x, y)
+						, velocity: new math.Vector(0, 0)
+						, maxSpeed: 300
+						, acceleration: new math.Vector(0, 0)
+					}
+				)
+			);
 
-	chasersGeometry.push(
-		new Geometry(
-			{
-				radius: 10 - c / (chaserCount - 1) * 9
-				, color: "rgb("
-					+ Math.random() * 255
-					+ ", " + Math.random() * 255
-					+ ", " + Math.random() * 255
-					+ ")"
-			}
-		)
-	);
-}
+			chasersGeometry.push(
+				new Geometry(
+					{
+						radius: 10 - c / (chaserCount - 1) * 9
+						, color: "rgb("
+							+ Math.random() * 255
+							+ ", " + Math.random() * 255
+							+ ", " + Math.random() * 255
+							+ ")"
+					}
+				)
+			);
+		}
+	}
+	, updateCallback: (dt_s) => {
+		simulation.simulate(dt_s);
+		drawTargetAndChasers();
+	}
+});
+
+task.start();

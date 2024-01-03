@@ -52,7 +52,11 @@ let physx = {
 
 	Simulation: class {
 		timeScale = 1.0;
-		integrationStep_s = 10;
+		integrationStep_s = 0;
+
+		constructor({ simulateCallback = undefined }) {
+			this.simulateCallback = simulateCallback;
+		}
 
 		simulate(dt_s) {
 			if (this.timeScale > 0) {
