@@ -1,0 +1,29 @@
+div#draw {
+	float: left;
+}
+
+div#fields {
+	display: block;
+	width: 500px;
+	float: left;
+	margin: 10px;
+}
+
+div.field {
+	display: block;
+	padding: 10px;
+}
+
+div.field label {
+	float: left;
+	width: 250px;
+}
+
+div.field input {
+	width: 200px;
+}
+
+div#fields button {
+	width: 100px;
+	margin: 10px;
+}

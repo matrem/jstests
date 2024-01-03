@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en-US">
+
+<head>
+	<script src="../libs/math.js" defer></script>
+	<script src="../libs/physx.js" defer></script>
+	<script src="../libs/draw.js" defer></script>
+	<script src="index.js" defer></script>
+	<link rel="stylesheet" href="../libs/style.css" />
+	<link rel="stylesheet" href="style.css" />
+	<meta charset="utf-8" />
+	<title>JS test : Leaving Earth</title>
+</head>
+
+<body>
+	<div id="draw">
+		<canvas id="canvas" width="500" height="500">canvas</canvas>
+	</div>
+	<div id="fields">
+		<div class="field">
+			<label>initial vertical speed (m.s-1)</label>
+			<input type="number" id="s0" value="11.5e3"></input>
+		</div>
+		<div class="field">
+			<label>X scale</label>
+			<input type="number" id="sx" value="3e-3"></input>
+		</div>
+		<div class="field">
+			<label>Y scale</label>
+			<input type="number" id="sy" value="2e-6"></input>
+		</div>
+		<div class="field">
+			<label>time scale</label>
+			<input type="number" id="st" value="1e3"></input>
+		</div>
+
+		<div class="field">
+			<label>rocket mass (kg)</label>
+			<input type="number" id="m" value="1000"></input>
+		</div>
+		<div class="field">
+			<label>rocket section area (m2)</label>
+			<input type="number" id="sa" value="1"></input>
+		</div>
+		<div class="field">
+			<label>rocket drag coeff</label>
+			<input type="number" id="dc" value="0.75"></input>
+		</div>
+
+		<button onclick="start()">start</button>
+		<button onclick="clean()">clear</button>
+
+		<div class="field"><label>time (s)</label><input id="t" readonly="true" /></div>
+		<div class="field"><label>dt (s)</label><input id="dt" readonly="true" /></div>
+		<div class="field"><label>vertical speed (m.s-1)</label><input id="vs" readonly="true" /></div>
+		<div class="field"><label>altitude (km)</label><input id="z" readonly="true" /></div>
+		<div class="field"><label>gravity accelleration (m.s-2)</label><input id="gz" readonly="true" /></div>
+	</div>
+</body>
+
+</html>
