@@ -10,14 +10,26 @@ let physx = {
 			this.mass = mass;
 		}
 
-		// update velocity and position from acceleration and dt
+		// update velocity and position from acceleration and dt using mid velocity for position (RungeKutta2)
 		update(dt) {
-			this.velocity = this.velocity.add(this.acceleration.mul(dt));
-			let l = this.velocity.length();
-			if (l > this.maxSpeed) {
-				this.velocity = this.velocity.normalize().mul(this.maxSpeed);
+			let midDv = this.acceleration.mul(dt / 2.0);
+			let midV = this.velocity.add(midDv);
+			this.velocity = midV.add(midDv);
+
+			let l = midV.length2();
+			let maxSpeed2 = this.maxSpeed;
+			if (midV > maxSpeed2) {
+				midV = midV.normalize().mul(this.maxSpeed);
 			}
-			this.position = this.position.add(this.velocity.mul(dt));
+			else {
+				l = this.velocity.length2();
+				if (l > maxSpeed2) {
+					this.velocity = this.velocity.normalize().mul(this.maxSpeed);
+				}
+			}
+
+			this.position = this.position.add(midV.mul(dt));
+
 			this.acceleration = this.acceleration.null();
 		}
 

@@ -4,6 +4,9 @@ RocketSimulation = class extends physx.Simulation {
 	#dragCoeff = 0.75;
 	#sectionArea_m2 = 40;
 	lastAcceleration = 0;
+	#lastMass = 0;
+	#lastZ = 0;
+	#lastV;
 
 	constructor() {
 		super({ simulateCallback: undefined });
@@ -26,6 +29,12 @@ RocketSimulation = class extends physx.Simulation {
 		this.computeCollision();
 	}
 
+	initLastParameters() {
+		this.#lastMass = this.rocket.mass;
+		this.#lastZ = this.rocket.position.z;
+		this.#lastV = this.rocket.velocity;
+	}
+
 	reset({ initialSpeed, initialAltitude_m, initialMass_kg }) {
 		this.rocket = new physx.Object(
 			{
@@ -36,9 +45,18 @@ RocketSimulation = class extends physx.Simulation {
 				, mass: initialMass_kg
 			}
 		);
+
+		this.initLastParameters();
 	}
 
+	//Force integration using mid value for parameters
 	forceIntegration() {
+		let midMass = (this.#lastMass + this.rocket.mass) / 2.0;
+		let midZ = (this.#lastZ + this.rocket.position.z) / 2.0;
+		let midV = this.#lastV.add(this.rocket.velocity).mul(0.5);
+
+		this.initLastParameters();
+
 		let force = new math.Vector(0, 0, 0);
 
 		//Thrust
@@ -52,9 +70,9 @@ RocketSimulation = class extends physx.Simulation {
 
 		//Gravity
 		let g = physx.gravity({
-			m0: this.rocket.mass
+			m0: midMass
 			, m1: physx.earth.mass_kg
-			, p0: new math.Vector(0, 0, physx.earth.radius_m + this.rocket.position.z)
+			, p0: new math.Vector(0, 0, physx.earth.radius_m + midZ)
 			, p1: new math.Vector(0, 0, 0)
 		})
 
@@ -64,10 +82,10 @@ RocketSimulation = class extends physx.Simulation {
 		let drag = this.rocket.velocity.null();
 
 		if (this.dragCoeff > 0 && this.sectionArea_m2 > 0) {
-			let atmosphericDensity_kgpm3 = physx.earth.atmosphericDensityFunc_m_kgpm3(this.rocket.position.z);
+			let atmosphericDensity_kgpm3 = physx.earth.atmosphericDensityFunc_m_kgpm3(midZ);
 			drag = physx.drag({
 				fluidDendity_kgpm3: atmosphericDensity_kgpm3
-				, velocity_mps: this.rocket.velocity
+				, velocity_mps: midV
 				, dragCoeff: this.dragCoeff
 				, area_m2: this.sectionArea_m2
 			});
