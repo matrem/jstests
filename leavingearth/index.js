@@ -28,8 +28,9 @@ main = new class {
 	parseInputs() {
 		this.simulation.timeScale = parseFloat(this.ui.inputs.timeScale.value);
 		this.simulation.integrationStep_s = parseFloat(this.ui.inputs.timeStep.value);
-		this.simulation.rocket.mass = parseFloat(this.ui.inputs.rocketMass.value);
-		this.simulation.sectionArea_m2 = parseFloat(this.ui.inputs.rocketSectionAread.value);
+		let newMass = parseFloat(this.ui.inputs.rocketMass.value);
+		if (newMass > 0) this.simulation.rocket.mass = newMass;
+		this.simulation.sectionArea_m2 = parseFloat(this.ui.inputs.rocketSectionArea.value);
 		this.simulation.dragCoeff = parseFloat(this.ui.inputs.rocketDragCoeff.value);
 		this.simulation.thrust = parseFloat(this.ui.inputs.thrust.value) * 1e3;
 	}
@@ -112,4 +113,42 @@ stop = function () {
 clean = function () {
 	main.drawing.clear();
 	main.drawGrid();
+}
+
+templatechange = function () {
+	switch (main.ui.inputs.templates.value) {
+		case "escape":
+			main.ui.inputs.scaleX.value = 2e4;
+			main.ui.inputs.scaleY.value = 3e4;
+			main.ui.inputs.timeScale.value = 1e3;
+			main.ui.inputs.timeStep.value = 1e-2;
+			main.ui.inputs.rocketMass.value = 1000e3;
+			main.ui.inputs.rocketSectionArea.value = 40;
+			main.ui.inputs.rocketDragCoeff.value = 0.75;
+			main.ui.inputs.s0.value = 11.5e3;
+			main.ui.inputs.thrust.value = 0;
+			break;
+		case "catapult":
+			main.ui.inputs.scaleX.value = 20;
+			main.ui.inputs.scaleY.value = 250e-3;
+			main.ui.inputs.timeScale.value = 1;
+			main.ui.inputs.timeStep.value = 1e-2;
+			main.ui.inputs.rocketMass.value = 100;
+			main.ui.inputs.rocketSectionArea.value = 1;
+			main.ui.inputs.rocketDragCoeff.value = 0.5;
+			main.ui.inputs.s0.value = 100;
+			main.ui.inputs.thrust.value = 0;
+			break;
+		case "human":
+			main.ui.inputs.scaleX.value = 1;
+			main.ui.inputs.scaleY.value = 0.5e-3;
+			main.ui.inputs.timeScale.value = 1;
+			main.ui.inputs.timeStep.value = 1e-3;
+			main.ui.inputs.rocketMass.value = 100;
+			main.ui.inputs.rocketSectionArea.value = 0.1;
+			main.ui.inputs.rocketDragCoeff.value = 1;
+			main.ui.inputs.s0.value = 2.5;
+			main.ui.inputs.thrust.value = 0;
+			break;
+	}
 }

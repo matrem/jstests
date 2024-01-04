@@ -1,14 +1,15 @@
 let ui = {
 	UI: class {
 		inputs = {
-			thrust: document.getElementById("thrust")
+			templates: document.getElementById("templates")
+			, thrust: document.getElementById("thrust")
 			, s0: document.getElementById("s0")
 			, scaleX: document.getElementById("sx")
 			, scaleY: document.getElementById("sy")
 			, timeScale: document.getElementById("st")
 			, timeStep: document.getElementById("ts")
 			, rocketMass: document.getElementById("m")
-			, rocketSectionAread: document.getElementById("sa")
+			, rocketSectionArea: document.getElementById("sa")
 			, rocketDragCoeff: document.getElementById("dc")
 		}
 

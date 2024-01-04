@@ -24,6 +24,14 @@
 		<div class="group">
 			<label>UI</label>
 			<div class="field">
+				<label>Templates</label>
+				<select id="templates" onchange="templatechange()">
+					<option value="escape">Escape velocity</option>
+					<option value="catapult">Catapult</option>
+					<option value="human">Human jump</option>
+				</select>
+			</div>
+			<div class="field">
 				<label>Max time (s))</label>
 				<input type="number" id="sx" value="2e4" min="1" step="1"></input>
 			</div>
