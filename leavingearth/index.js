@@ -1,111 +1,115 @@
-//Inputs
-let thrustInput = document.getElementById("thrust");
-let s0Input = document.getElementById("s0");
-let scaleXInput = document.getElementById("sx");
-let scaleYInput = document.getElementById("sy");
-let timeScaleInput = document.getElementById("st");
-let timeStepInput = document.getElementById("ts");
+main = new class {
+	//Simulation
+	time_s = 0;
 
-let timeInput = document.getElementById("t");
-let timeInput_hr = document.getElementById("t_hr");
-let vsInput = document.getElementById("vs");
-let altitudeInput = document.getElementById("z");
-let altitudeInput_km3 = document.getElementById("z_km3");
-let gravityAccellInput = document.getElementById("gz");
-let dragAccellInput = document.getElementById("dz");
+	simulation = new RocketSimulation();
 
-let rocketMassInput = document.getElementById("m");
-let rocketSectionAreadInput = document.getElementById("sa");
-let rocketDragCoeffInput = document.getElementById("dc");
+	//Drawing
+	monitorDrawing = new monitor.Drawing({ id: "scp" });
 
-//global variables
-let scaleX = 1;
-let scaleY = 1;
-
-plotRocket = function () {
-	return new math.Vector(time_s * scaleX, drawing.height - scaleY * simulation.rocket.position.z);
-}
-
-monitorDrawing = new monitor.Drawing({ id: "scp" });
-
-//Drawing
-drawing = new draw.Drawing(
-	{
+	drawing = new draw.Drawing({
 		id: "canvas"
 		, initializeCallback: (ctx) => {
 			ctx.fillStyle = "rgb(200, 0, 0)";
-			ctx.lineWidth = 3;
+			ctx.lineWidth = 1;
 		}
-	}
-)
-
-let time_s = 0;
-
-simulation = new RocketSimulation();
-
-work = new task.Work({
-	initializeCallback: () => {
-		timeInput.value = "";
-		timeInput_hr.value = "";
-		vsInput.value = "";
-		altitudeInput.value = "";
-		altitudeInput_km3.value = "";
-		gravityAccellInput.value = "";
-		gravityAccellInput.value = "";
-	}
-	, updateStartCallback: () => {
-		simulation.timeScale = parseFloat(timeScaleInput.value);
-		simulation.integrationStep_s = parseFloat(timeStepInput.value);
-		simulation.rocket.mass = parseFloat(rocketMassInput.value);
-		simulation.sectionArea_m2 = parseFloat(rocketSectionAreadInput.value);
-		simulation.dragCoeff = parseFloat(rocketDragCoeffInput.value);
-		simulation.thrust = parseFloat(thrustInput.value);
-	}
-	, updateCallback: (dt_s) => {
-		let p0 = plotRocket();
-
-		dt_s = simulation.simulate(dt_s);
-		time_s += dt_s;
-
-		new draw.Line({
-			p0: p0
-			, p1: plotRocket()
-		}).stroke(drawing.context);
-	}
-	, updateEndCallback: (dt_s, duration_s) => {
-		//Update inputs
-		timeInput.value = Math.round(time_s);
-		timeInput_hr.value = Math.round(time_s / 3600.0 * 1e2) / 1e2;
-		vsInput.value = Math.round(simulation.rocket.velocity.z * 1e2) / 1e2;
-		altitudeInput.value = Math.round(simulation.rocket.position.z) / 1e3;
-		altitudeInput_km3.value = Math.round(simulation.rocket.position.z / 1e3) / 1e3;
-		gravityAccellInput.value = Math.round(simulation.forces.gravity.z / simulation.rocket.mass * 1e3) / 1e3;
-		dragAccellInput.value = Math.round(simulation.forces.drag.z / simulation.rocket.mass * 1e3) / 1e3;
-
-		//Update monitor
-		monitorDrawing.plotRatio(duration_s / dt_s);
-	}
-})
-
-start = function () {
-	drawing.context.strokeStyle = draw.randomColor();
-
-	scaleX = parseFloat(scaleXInput.value);
-	scaleY = parseFloat(scaleYInput.value);
-
-	simulation.reset({
-		initialSpeed: parseFloat(s0Input.value)
-		, initialMass_kg: parseFloat(rocketMassInput.value)
 	});
 
-	time_s = 0;
-	work.start();
-}
+	plotRocket() {
+		return new math.Vector(this.time_s * this.scaleX, this.drawing.height - this.scaleY * this.simulation.rocket.position.z);
+	}
+
+	//UI
+	scaleX = 1
+	scaleY = 1
+
+	ui = new ui.UI();
+
+	parseInputs() {
+		this.simulation.timeScale = parseFloat(this.ui.inputs.timeScale.value);
+		this.simulation.integrationStep_s = parseFloat(this.ui.inputs.timeStep.value);
+		this.simulation.rocket.mass = parseFloat(this.ui.inputs.rocketMass.value);
+		this.simulation.sectionArea_m2 = parseFloat(this.ui.inputs.rocketSectionAread.value);
+		this.simulation.dragCoeff = parseFloat(this.ui.inputs.rocketDragCoeff.value);
+		this.simulation.thrust = parseFloat(this.ui.inputs.thrust.value);
+	}
+
+	updateOutputs() {
+		this.ui.outputs.time_s.value = Math.round(this.time_s);
+		this.ui.outputs.time_hr.value = Math.round(this.time_s / 3600.0 * 1e2) / 1e2;
+		this.ui.outputs.vs.value = Math.round(this.simulation.rocket.velocity.z * 1e2) / 1e2;
+		this.ui.outputs.altitude_km.value = Math.round(this.simulation.rocket.position.z) / 1e3;
+		this.ui.outputs.altitude_km3.value = Math.round(this.simulation.rocket.position.z / 1e3) / 1e3;
+		this.ui.outputs.gravityAccell.value = Math.round(this.simulation.forces.gravity.z / this.simulation.rocket.mass * 1e3) / 1e3;
+		this.ui.outputs.dragAccell.value = Math.round(this.simulation.forces.drag.z / this.simulation.rocket.mass * 1e3) / 1e3;
+	}
+
+	drawGrid() {
+		this.drawing.context.strokeStyle = "rgb(255,255, 255)";
+
+		let subdvision = 10;
+		for (let s = 1; s < subdvision; ++s) {
+			this.drawing.context.lineWidth = (s % 2) == 0 ? 1 : 0.5;
+			new draw.Line({
+				p0: new math.Vector(0, this.drawing.height * s / subdvision)
+				, p1: new math.Vector(this.drawing.width, this.drawing.height * s / subdvision)
+			}).stroke(this.drawing.context);
+		}
+		for (let s = 0; s < subdvision; ++s) {
+			this.drawing.context.lineWidth = (s % 2) == 0 ? 1 : 0.5;
+			new draw.Line({
+				p0: new math.Vector(this.drawing.width * s / subdvision, 0)
+				, p1: new math.Vector(this.drawing.width * s / subdvision, this.drawing.height)
+			}).stroke(this.drawing.context);
+		}
+	}
+
+	// Main work
+	work = new task.Work({
+		initializeCallback: () => {
+			this.ui.resetInputs();
+			this.drawGrid();
+		}
+		, startCallback: () => {
+			this.drawing.context.strokeStyle = draw.randomColor({ r: { min: 100, max: 255 }, g: { min: 50, max: 255 }, b: { min: 50, max: 255 } });
+			this.drawing.context.lineWidth = 3;
+
+			this.scaleX = this.drawing.width / parseFloat(this.ui.inputs.scaleX.value);
+			this.scaleY = this.drawing.height / (parseFloat(this.ui.inputs.scaleY.value) * 1e3);
+			this.simulation.reset({
+				initialSpeed: parseFloat(this.ui.inputs.s0.value)
+				, initialMass_kg: parseFloat(this.ui.inputs.rocketMass.value)
+			});
+			this.time_s = 0;
+		}
+		, updateBeginCallback: () => this.parseInputs()
+		, updateCallback: (dt_s) => {
+			let p0 = this.plotRocket();
+
+			dt_s = this.simulation.simulate(dt_s);
+			this.time_s += dt_s;
+
+			new draw.Line({
+				p0: p0
+				, p1: this.plotRocket()
+			}).stroke(this.drawing.context);
+		}
+		, updateEndCallback: (dt_s, duration_s) => {
+			this.updateOutputs();
+			this.monitorDrawing.plotRatio(duration_s / dt_s);
+		}
+	})
+};
+
+start = function () {
+	main.work.start();
+};
 
 stop = function () {
-	work.stop();
+	main.work.stop();
 }
 
 clean = function () {
-	drawing.clear();
+	main.drawing.clear();
+	main.drawGrid();
 }

@@ -8,6 +8,7 @@
 	<script src="../libs/draw.js" defer></script>
 	<script src="../libs/monitor.js" defer></script>
 	<script src="RocketSimulation.js" defer></script>
+	<script src="ui.js" defer></script>
 	<script src="index.js" defer></script>
 	<link rel="stylesheet" href="../libs/style.css" />
 	<link rel="stylesheet" href="style.css" />
@@ -19,55 +20,69 @@
 	<div id="draw">
 		<canvas id="canvas" width="500" height="500">canvas</canvas>
 	</div>
-	<div id="fields">
-		<div class="field">
-			<label>thrust (N)</label>
-			<input type="number" id="thrust" value="0"></input>
-		</div>
-		<div class="field">
-			<label>initial vertical speed (m.s-1)</label>
-			<input type="number" id="s0" value="11.5e3"></input>
-		</div>
-		<div class="field">
-			<label>X scale</label>
-			<input type="number" id="sx" value="3e-3"></input>
-		</div>
-		<div class="field">
-			<label>Y scale</label>
-			<input type="number" id="sy" value="2e-6"></input>
-		</div>
-		<div class="field">
-			<label>time scale</label>
-			<input type="number" id="st" value="1e2"></input>
-		</div>
-		<div class="field">
-			<label>time step (s)</label>
-			<input type="number" id="ts" value="1e-2"></input>
+	<div id="inputs">
+		<div class="group">
+			<label>UI</label>
+			<div class="field">
+				<label>Max time (s))</label>
+				<input type="number" id="sx" value="10"></input>
+			</div>
+			<div class="field">
+				<label>Max altitude (km)</label>
+				<input type="number" id="sy" value="1"></input>
+			</div>
 		</div>
 
-		<div class="field">
-			<label>rocket mass (kg)</label>
-			<input type="number" id="m" value="1000e3"></input>
-		</div>
-		<div class="field">
-			<label>rocket section area (m2)</label>
-			<input type="number" id="sa" value="40"></input>
-		</div>
-		<div class="field">
-			<label>rocket drag coeff</label>
-			<input type="number" id="dc" value="0.75"></input>
+		<div class="group">
+			<label>Time</label>
+			<div class="field">
+				<label>scale</label>
+				<input type="number" id="st" value="1e2"></input>
+			</div>
+			<div class="field">
+				<label>integration step (s)</label>
+				<input type="number" id="ts" value="1e-2"></input>
+			</div>
 		</div>
 
-		<button onclick="start()">start</button>
-		<button onclick="stop()">stop</button>
-		<button onclick="clean()">clear</button>
+		<div class="group">
+			<label>Rocket</label>
+			<div class="field">
+				<label>mass (kg)</label>
+				<input type="number" id="m" value="1000e3"></input>
+			</div>
+			<div class="field">
+				<label>section area (m2)</label>
+				<input type="number" id="sa" value="40"></input>
+			</div>
+			<div class="field">
+				<label>drag coeff</label>
+				<input type="number" id="dc" value="0.75"></input>
+			</div>
+			<div class="field">
+				<label>thrust (N)</label>
+				<input type="number" id="thrust" value="0"></input>
+			</div>
+			<div class="field">
+				<label>initial vertical speed (m.s-1)</label>
+				<input type="number" id="s0" value="11.5e3"></input>
+			</div>
+		</div>
+		<div id="actions">
+			<button onclick="start()">start</button>
+			<button onclick="stop()">stop</button>
+			<button onclick="clean()">clear</button>
+		</div>
+	</div>
+	<div id="outputs">
+		<div class="field"><label>step compute %</label><canvas id="scp" width="220px" height="50px" /></div>
 
 		<div class="field">
 			<label>time (s) (hr)</label><input id="t" readonly="true" /><input id="t_hr" readonly="true" />
 		</div>
-		<div class="field"><label>step compute %</label><canvas id="scp" width="220px" height="50px" /></div>
 
 		<div class="field"><label>vertical speed (m.s-1)</label><input id="vs" readonly="true" /></div>
+
 		<div class="field">
 			<label>altitude (km) (km3)</label>
 			<input id="z" readonly="true" />

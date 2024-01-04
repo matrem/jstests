@@ -41,11 +41,15 @@ let draw = {
 		get height() { return this.context.canvas.height }
 	}
 
-	, randomColor() {
+	, randomColor({
+		r = { min: 0, max: 255 }
+		, g = { min: 0, max: 255 }
+		, b = { min: 0, max: 255 }
+	}) {
 		return "rgb("
-			+ Math.random() * 255
-			+ ", " + Math.random() * 255
-			+ ", " + Math.random() * 255
+			+ (Math.random() * (r.max - r.min) + r.min)
+			+ ", " + (Math.random() * (g.max - g.min) + g.min)
+			+ ", " + (Math.random() * (b.max - b.min) + b.min)
 			+ ")";
 	}
 }

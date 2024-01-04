@@ -2,9 +2,9 @@ let monitor = {
 	Drawing: class {
 		#monitorX = 0;
 		#monitorRatio = 0;
-		monitorStep = 0.1;
+		step = 0.1;
 
-		constructor({ id }) {
+		constructor({ id, step = 0.1 }) {
 			this.monitor = new draw.Drawing({
 				id: id
 				, initializeCallback: (ctx) => {
@@ -12,11 +12,12 @@ let monitor = {
 					ctx.lineWidth = 1;
 				}
 			});
+			this.step = step;
 		}
 
 		#plotMonitor() {
 			let plot = new math.Vector(this.#monitorX, this.monitor.height * (1 - this.#monitorRatio));
-			this.#monitorX += this.monitorStep;
+			this.#monitorX += this.step;
 			if (this.#monitorX >= this.monitor.width) {
 				this.#monitorX = 0;
 				this.monitor.clear();

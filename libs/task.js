@@ -3,20 +3,30 @@ let task = {
 	Work: class {
 		#started = false;
 
-		constructor({ initializeCallback, updateCallback, updateStartCallback, updateEndCallback }) {
+		constructor({
+			initializeCallback
+			, startCallback
+			, updateCallback
+			, updateBeginCallback
+			, updateEndCallback
+		}) {
+			this.startCallback = startCallback;
 			this.updateCallback = updateCallback;
-			this.updateStartCallback = updateStartCallback;
+			this.updateBeginCallback = updateBeginCallback;
 			this.updateEndCallback = updateEndCallback;
 			if (initializeCallback != undefined) initializeCallback();
 		}
 
 		start() {
 			this.started = true;
+			this.previousNow_ms = undefined;
+			if (this.startCallback != undefined) this.startCallback();
 			window.requestAnimationFrame(this.#update.bind(this));
 		}
 
 		stop() {
 			this.started = false;
+			this.previousNow_ms = undefined;
 		}
 
 		#update() {
@@ -24,7 +34,7 @@ let task = {
 
 			if (this.started) {
 				if (this.previousNow_ms != undefined) {
-					if (this.updateStartCallback != undefined) this.updateStartCallback();
+					if (this.updateBeginCallback != undefined) this.updateBeginCallback();
 
 					let dt_ms = now_ms - this.previousNow_ms;
 
