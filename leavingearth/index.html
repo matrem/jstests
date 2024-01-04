@@ -25,11 +25,11 @@
 			<label>UI</label>
 			<div class="field">
 				<label>Max time (s))</label>
-				<input type="number" id="sx" value="10"></input>
+				<input type="number" id="sx" value="2e4" min="1" step="1"></input>
 			</div>
 			<div class="field">
 				<label>Max altitude (km)</label>
-				<input type="number" id="sy" value="1"></input>
+				<input type="number" id="sy" value="3e4" min="1e-3" step="0.1"></input>
 			</div>
 		</div>
 
@@ -37,11 +37,11 @@
 			<label>Time</label>
 			<div class="field">
 				<label>scale</label>
-				<input type="number" id="st" value="1e2"></input>
+				<input type="number" id="st" value="1e3" min="1e-1" step="0.1"></input>
 			</div>
 			<div class="field">
 				<label>integration step (s)</label>
-				<input type="number" id="ts" value="1e-2"></input>
+				<input type="number" id="ts" value="1e-2" min="1e-4" step="0.01"></input>
 			</div>
 		</div>
 
@@ -49,25 +49,26 @@
 			<label>Rocket</label>
 			<div class="field">
 				<label>mass (kg)</label>
-				<input type="number" id="m" value="1000e3"></input>
+				<input type="number" id="m" value="1000e3" min="1e-3" step="1"></input>
 			</div>
 			<div class="field">
 				<label>section area (m2)</label>
-				<input type="number" id="sa" value="40"></input>
+				<input type="number" id="sa" value="40" min="0" step="0.1"></input>
 			</div>
 			<div class="field">
 				<label>drag coeff</label>
-				<input type="number" id="dc" value="0.75"></input>
+				<input type="number" id="dc" value="0.75" min="0" step="0.1"></input>
 			</div>
 			<div class="field">
-				<label>thrust (N)</label>
-				<input type="number" id="thrust" value="0"></input>
+				<label>thrust (kN)</label>
+				<input type="number" id="thrust" value="0" step="0.1"></input>
 			</div>
 			<div class="field">
 				<label>initial vertical speed (m.s-1)</label>
-				<input type="number" id="s0" value="11.5e3"></input>
+				<input type="number" id="s0" value="11.5e3" min="0" step="1"></input>
 			</div>
 		</div>
+
 		<div id="actions">
 			<button onclick="start()">start</button>
 			<button onclick="stop()">stop</button>

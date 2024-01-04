@@ -31,7 +31,7 @@ main = new class {
 		this.simulation.rocket.mass = parseFloat(this.ui.inputs.rocketMass.value);
 		this.simulation.sectionArea_m2 = parseFloat(this.ui.inputs.rocketSectionAread.value);
 		this.simulation.dragCoeff = parseFloat(this.ui.inputs.rocketDragCoeff.value);
-		this.simulation.thrust = parseFloat(this.ui.inputs.thrust.value);
+		this.simulation.thrust = parseFloat(this.ui.inputs.thrust.value) * 1e3;
 	}
 
 	updateOutputs() {
