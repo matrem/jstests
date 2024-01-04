@@ -23,10 +23,10 @@ RocketSimulation = class extends physx.Simulation {
 		this.computeCollision();
 	}
 
-	reset({ initialSpeed, initialMass_kg }) {
+	reset({ initialSpeed, initialAltitude_m, initialMass_kg }) {
 		this.rocket = new physx.Object(
 			{
-				position: new math.Vector(0, 0, 0)
+				position: new math.Vector(0, 0, initialAltitude_m)
 				, velocity: new math.Vector(0, 0, initialSpeed)
 				, maxSpeed: undefined
 				, acceleration: new math.Vector(0, 0, 0)

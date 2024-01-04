@@ -79,6 +79,7 @@ main = new class {
 			this.scaleY = this.drawing.height / (parseFloat(this.ui.inputs.scaleY.value) * 1e3);
 			this.simulation.reset({
 				initialSpeed: parseFloat(this.ui.inputs.s0.value)
+				, initialAltitude_m: parseFloat(this.ui.inputs.z0.value) * 1e3
 				, initialMass_kg: parseFloat(this.ui.inputs.rocketMass.value)
 			});
 			this.time_s = 0;
@@ -126,6 +127,7 @@ templatechange = function () {
 			main.ui.inputs.rocketSectionArea.value = 40;
 			main.ui.inputs.rocketDragCoeff.value = 0.75;
 			main.ui.inputs.s0.value = 11.5e3;
+			main.ui.inputs.z0.value = 0;
 			main.ui.inputs.thrust.value = 0;
 			break;
 		case "catapult":
@@ -137,6 +139,7 @@ templatechange = function () {
 			main.ui.inputs.rocketSectionArea.value = 1;
 			main.ui.inputs.rocketDragCoeff.value = 0.5;
 			main.ui.inputs.s0.value = 100;
+			main.ui.inputs.z0.value = 0;
 			main.ui.inputs.thrust.value = 0;
 			break;
 		case "human":
@@ -145,9 +148,22 @@ templatechange = function () {
 			main.ui.inputs.timeScale.value = 1;
 			main.ui.inputs.timeStep.value = 1e-3;
 			main.ui.inputs.rocketMass.value = 100;
-			main.ui.inputs.rocketSectionArea.value = 0.1;
-			main.ui.inputs.rocketDragCoeff.value = 1;
+			main.ui.inputs.rocketSectionArea.value = 0.3;
+			main.ui.inputs.rocketDragCoeff.value = 1.5;
 			main.ui.inputs.s0.value = 2.5;
+			main.ui.inputs.z0.value = 0;
+			main.ui.inputs.thrust.value = 0;
+			break;
+		case "freefall":
+			main.ui.inputs.scaleX.value = 25;
+			main.ui.inputs.scaleY.value = 1;
+			main.ui.inputs.timeScale.value = 1;
+			main.ui.inputs.timeStep.value = 1e-3;
+			main.ui.inputs.rocketMass.value = 100;
+			main.ui.inputs.rocketSectionArea.value = 0.3;
+			main.ui.inputs.rocketDragCoeff.value = 1.5;
+			main.ui.inputs.s0.value = 0;
+			main.ui.inputs.z0.value = 1;
 			main.ui.inputs.thrust.value = 0;
 			break;
 	}

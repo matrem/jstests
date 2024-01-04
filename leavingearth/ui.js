@@ -4,6 +4,7 @@ let ui = {
 			templates: document.getElementById("templates")
 			, thrust: document.getElementById("thrust")
 			, s0: document.getElementById("s0")
+			, z0: document.getElementById("z0")
 			, scaleX: document.getElementById("sx")
 			, scaleY: document.getElementById("sy")
 			, timeScale: document.getElementById("st")
