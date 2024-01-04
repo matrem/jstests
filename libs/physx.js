@@ -145,43 +145,48 @@ let physx = {
 	]
 }
 
-physx.earth = new physx.Planet(
-	{
-		mass_kg: 5.972e24
-		, radius_m: 6371e3
-		, atmosphericDensityFunc_m_kgpm3: altitude_m => {
-			// https://www.spaceacademy.net.au/watch/debris/atmosmod.htm
-			let aCell = altitude_m / 10e3;
-			if (aCell < physx.earthAtmosphericDensity_log10by10km.length - 1) {
-				let bottomCell = Math.floor(aCell);
-				let upCell = bottomCell + 1;
-				let cursor = (aCell - bottomCell);
+physx.earth = new physx.Planet({
+	mass_kg: 5.972e24
+	, radius_m: 6371e3
+	, atmosphericDensityFunc_m_kgpm3: altitude_m => {
+		// https://www.spaceacademy.net.au/watch/debris/atmosmod.htm
+		let aCell = altitude_m / 10e3;
+		if (aCell < physx.earthAtmosphericDensity_log10by10km.length - 1) {
+			let bottomCell = Math.floor(aCell);
+			let upCell = bottomCell + 1;
+			let cursor = (aCell - bottomCell);
 
-				let bottomValue = physx.earthAtmosphericDensity_log10by10km[bottomCell];
-				let upValue = physx.earthAtmosphericDensity_log10by10km[upCell];
-				let valueDelta = upValue - bottomValue;
+			let bottomValue = physx.earthAtmosphericDensity_log10by10km[bottomCell];
+			let upValue = physx.earthAtmosphericDensity_log10by10km[upCell];
+			let valueDelta = upValue - bottomValue;
 
-				let p = Math.pow(10, bottomValue + cursor * valueDelta);
+			let p = Math.pow(10, bottomValue + cursor * valueDelta);
 
-				if (p != p) {
-					alert("nan");
-				}
+			if (p != p) {
+				alert("nan");
+			}
 
-				return p;
+			return p;
+		}
+		else {
+			if (altitude_m < 500e3) {
+				let Ap = 0;
+				let F10 = (70 + 300) / 2.0;
+				let T = 900 + 2.5 * (F10 - 70) + 1.5 * Ap;
+				let h = (altitude_m / 1e3);
+				let u = 27 - 0.012 * (h - 200);
+				let H = T / u;
+				return 6e-10 * Math.exp(-1 * (h - 175) / H);
 			}
 			else {
-				if (altitude_m < 500e3) {
-					let Ap = 0;
-					let F10 = (70 + 300) / 2.0;
-					let T = 900 + 2.5 * (F10 - 70) + 1.5 * Ap;
-					let h = (altitude_m / 1e3);
-					let u = 27 - 0.012 * (h - 200);
-					let H = T / u;
-					return 6e-10 * Math.exp(-1 * (h - 175) / H);
-				}
-				else {
-					return 0;
-				}
+				return 0;
 			}
 		}
-	})
+	}
+})
+
+physx.moon = new physx.Planet({
+	mass_kg: 7.348e22
+	, radius_m: 1737.4e3
+	, atmosphericDensityFunc_m_kgpm3: altitude_m => 0
+})

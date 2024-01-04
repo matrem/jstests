@@ -2,7 +2,9 @@ main = new class {
 	//Simulation
 	time_s = 0;
 
-	simulation = new RocketSimulation();
+	simulation = new RocketSimulation({
+		planet: physx.earth
+	});
 
 	//Drawing
 	monitorDrawing = new monitor.Drawing({ id: "scp" });
@@ -166,6 +168,17 @@ templatechange = function () {
 			main.ui.inputs.s0.value = 0;
 			main.ui.inputs.z0.value = 1;
 			main.ui.inputs.thrust.value = 0;
+			break;
+	}
+}
+
+planetChange = function () {
+	switch (main.ui.inputs.planets.value) {
+		case "earth":
+			main.simulation.planet = physx.earth;
+			break;
+		case "moon":
+			main.simulation.planet = physx.moon;
 			break;
 	}
 }

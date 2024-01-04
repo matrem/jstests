@@ -7,12 +7,14 @@ RocketSimulation = class extends physx.Simulation {
 	#lastMass = 0;
 	#lastZ = 0;
 	#lastV;
+	planet;
 
-	constructor() {
+	constructor({ planet }) {
 		super({ simulateCallback: undefined });
 
 		this.simulateCallback = this.simulateRocket;
 
+		this.planet = planet;
 		this.thrust = thrust;
 		this.reset(0, 100e3);
 	}
@@ -71,8 +73,8 @@ RocketSimulation = class extends physx.Simulation {
 		//Gravity
 		let g = physx.gravity({
 			m0: midMass
-			, m1: physx.earth.mass_kg
-			, p0: new math.Vector(0, 0, physx.earth.radius_m + midZ)
+			, m1: this.planet.mass_kg
+			, p0: new math.Vector(0, 0, this.planet.radius_m + midZ)
 			, p1: new math.Vector(0, 0, 0)
 		})
 
@@ -82,7 +84,7 @@ RocketSimulation = class extends physx.Simulation {
 		let drag = this.rocket.velocity.null();
 
 		if (this.dragCoeff > 0 && this.sectionArea_m2 > 0) {
-			let atmosphericDensity_kgpm3 = physx.earth.atmosphericDensityFunc_m_kgpm3(midZ);
+			let atmosphericDensity_kgpm3 = this.planet.atmosphericDensityFunc_m_kgpm3(midZ);
 			drag = physx.drag({
 				fluidDendity_kgpm3: atmosphericDensity_kgpm3
 				, velocity_mps: midV

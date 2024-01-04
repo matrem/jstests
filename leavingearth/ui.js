@@ -2,6 +2,7 @@ let ui = {
 	UI: class {
 		inputs = {
 			templates: document.getElementById("templates")
+			, planets: document.getElementById("planets")
 			, thrust: document.getElementById("thrust")
 			, s0: document.getElementById("s0")
 			, z0: document.getElementById("z0")
