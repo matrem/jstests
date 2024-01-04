@@ -3,6 +3,7 @@ RocketSimulation = class extends physx.Simulation {
 	thrust = 0;
 	#dragCoeff = 0.75;
 	#sectionArea_m2 = 40;
+	lastAcceleration = 0;
 
 	constructor() {
 		super({ simulateCallback: undefined });
@@ -16,6 +17,8 @@ RocketSimulation = class extends physx.Simulation {
 	simulateRocket(dt_s) {
 		this.forces = this.forceIntegration();
 		task.assertNAN(this.forces.gravity.z);
+
+		this.lastAcceleration = this.rocket.acceleration;
 
 		this.rocket.update(dt_s);
 		task.assertNAN(this.rocket.position.z);

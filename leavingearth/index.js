@@ -43,6 +43,7 @@ main = new class {
 		this.ui.outputs.altitude_km3.value = Math.round(this.simulation.rocket.position.z / 1e3) / 1e3;
 		this.ui.outputs.gravityAccell.value = Math.round(this.simulation.forces.gravity.z / this.simulation.rocket.mass * 1e3) / 1e3;
 		this.ui.outputs.dragAccell.value = Math.round(this.simulation.forces.drag.z / this.simulation.rocket.mass * 1e3) / 1e3;
+		this.ui.outputs.accell.value = Math.round(this.simulation.lastAcceleration.z * 1e3) / 1e3;
 	}
 
 	drawGrid() {

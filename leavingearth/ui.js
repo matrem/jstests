@@ -22,6 +22,7 @@ let ui = {
 			, altitude_km3: document.getElementById("z_km3")
 			, gravityAccell: document.getElementById("gz")
 			, dragAccell: document.getElementById("dz")
+			, accell: document.getElementById("accell")
 		}
 
 		resetInputs() {
@@ -32,6 +33,7 @@ let ui = {
 			this.outputs.altitude_km3.value = "";
 			this.outputs.gravityAccell.value = "";
 			this.outputs.dragAccell.value = "";
+			this.outputs.accell.value = "";
 		}
 	}
 }
