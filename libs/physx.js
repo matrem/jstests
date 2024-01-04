@@ -17,7 +17,7 @@ let physx = {
 			this.velocity = midV.add(midDv);
 
 			let l = midV.length2();
-			let maxSpeed2 = this.maxSpeed;
+			let maxSpeed2 = this.maxSpeed * this.maxSpeed;
 			if (midV > maxSpeed2) {
 				midV = midV.normalize().mul(this.maxSpeed);
 			}
