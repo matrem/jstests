@@ -1,51 +1,11 @@
-div#draw {
-	float: left;
-}
+/*div#canvaswrap {
+	position: relative;
+	background-color: red;
+	border: solid black 1px;
+}*/
 
-div#inputs,
-div#outputs {
-	display: block;
-	width: 500px;
-	float: left;
-	margin: 10px;
-}
-
-div#actions {
-	display: block;
-	width: 50%;
-	margin: auto;
-}
-
-div#actions button {
-	margin: 10px;
-}
-
-div.group {
-	margin: 10px;
-}
-
-div.group>label {
-	font-weight: bold;
-	text-align: center;
-	display: block;
-	width: 100%;
-}
-
-div.field {
-	display: block;
-	padding: 10px;
-}
-
-div.field label {
-	float: left;
-	width: 250px;
-}
-
-div.field input {
-	width: 100px;
-}
-
-div#fields button {
-	width: 100px;
-	margin: 10px;
+canvas#tipcanvas {
+	position: relative;
+	right: 250px;
+	background-color: transparent;
 }

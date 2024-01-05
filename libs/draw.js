@@ -32,27 +32,37 @@ draw.Drawing = class {
 	#inited = false;
 
 	constructor({ id, autoClear = true, initializeCallback, mouseMoveCallback }) {
-		this.canvas = document.getElementById(id);
 		this.autoClear = autoClear;
 
-		if (this.canvas && this.canvas.getContext) {
-			this.context = this.canvas.getContext("2d");
+		this.context = this.getContext(id);
+
+		if (this.context != undefined) {
+			if (initializeCallback != undefined) initializeCallback(this.context);
+			if (mouseMoveCallback != undefined) this.context.canvas.onmousemove = mouseMoveCallback;
+		}
+	}
+
+	getContext(id) {
+		let canvas = document.getElementById(id);
+		let context;
+		if (canvas && canvas.getContext) context = canvas.getContext("2d");
+
+		if (context == undefined) {
+			alert("Can't get " + id + " canvas 2d context");
 		}
 
-		if (this.context == undefined) {
-			alert("Can't get " + id + "canvas 2d context");
-		}
-		else {
-			if (initializeCallback != undefined) initializeCallback(this.context);
-			if (mouseMoveCallback != undefined) this.canvas.onmousemove = mouseMoveCallback;
-		}
+		return context;
 	}
 
 	initialize() { }
 
 	clear() {
-		this.context.clearRect(
-			0, 0, this.context.canvas.width, this.context.canvas.height
+		this.clearContext(this.context);
+	}
+
+	clearContext(context) {
+		context.clearRect(
+			0, 0, context.canvas.width, context.canvas.height
 		)
 	}
 
@@ -70,12 +80,29 @@ draw.Drawing = class {
 };
 
 draw.TransformedDrawing = class extends draw.Drawing {
-	offset = new math.Vector(0, 0); //in world
-	zoomIndex = 0;
-	zoom = 1;
+	#offset = new math.Vector(0, 0); //in world
+	#zoomIndex = 0;
+	#zoom = 1;
+	#worldMouse;
 
-	constructor({ id, autoClear = true, zoomPow = 1.1, panButton = 0, resetButton = 1, unit = "", initialZoomIndex = 0, initialOffset = new math.Vector(0, 0) }) {
+	constructor({
+		id, tipId
+		, autoClear = true
+		, unit = ""
+		, panButton = 0, resetButton = 1
+		, zoomPow = 1.1
+		, initialZoomIndex = 0, initialOffset = new math.Vector(0, 0)
+		, showGrid = true, showAxis = true, showCoords = true
+	}) {
 		super({ id: id, autoClear: autoClear });
+
+		if (tipId != undefined) {
+			this.tipContext = this.getContext(tipId);
+			this.tipContext.fillStyle = "rgb(255,255, 255)";
+			this.tipContext.font = "" + (this.width / 40) + "px serif";
+			this.tipContext.textAlign = "left";
+			this.tipContext.textBaseline = "top";
+		}
 
 		this.zoomPow = zoomPow;
 		this.panButton = panButton;
@@ -83,69 +110,80 @@ draw.TransformedDrawing = class extends draw.Drawing {
 		this.unit = unit;
 		this.initialZoomIndex = initialZoomIndex;
 		this.initialOffset = initialOffset;
+		this.showGrid = showGrid;
+		this.showAxis = showAxis;
+		this.showCoords = showCoords;
 	}
 
 	initialize() {
+		this.context.strokeStyle = "rgb(255,255, 255)";
 		this.initializeEvents();
 	}
 
 	initializeEvents() {
-		this.canvas.addEventListener("pointerdown", (event) => {
+		let canvas = this.context.canvas;
+
+		canvas.addEventListener("pointerdown", (event) => {
 			if (event.button == this.panButton) {
 				this.panDown = true;
 				this.panPosition = this.getPointerPos(event);
-				this.canvas.setPointerCapture(event.pointerId);
+				canvas.setPointerCapture(event.pointerId);
 			}
 		});
-		this.canvas.addEventListener("pointerup", (event) => {
+		canvas.addEventListener("pointerup", (event) => {
 			if (event.button == this.panButton) {
-				this.canvas.releasePointerCapture(event.pointerId);
+				canvas.releasePointerCapture(event.pointerId);
 				this.panDown = false;
 			}
 			else if (event.button == this.resetButton) {
 				this.onReset();
 			}
 		});
-		this.canvas.addEventListener("pointermove", (event) => {
+		canvas.addEventListener("pointermove", (event) => {
+			let pos = this.getPointerPos(event);
+			this.#worldMouse = this.canvasToWorld(pos);
+
 			if (this.panDown) {
-				let newPanPosition = this.getPointerPos(event);
-				let dP = newPanPosition.sub(this.panPosition);
-				this.panPosition = newPanPosition;
+				let dP = pos.sub(this.panPosition);
+				this.panPosition = pos;
 				this.onPan(dP);
 			}
+
+			this.drawTip();
 		});
-		this.canvas.addEventListener("wheel", event => {
+		canvas.addEventListener("wheel", event => {
 			let canvasPos = this.getPointerPos(event);
 			this.onZoom(canvasPos, Math.sign(event.deltaY));
+			this.drawTip();
 		});
 	}
 
 	onPan(pan) {
-		this.offset = this.offset.add(
-			pan.mul(1.0 / this.zoom)
+		this.#offset = this.#offset.add(
+			pan.mul(1.0 / this.#zoom)
 		);
 		this.draw();
 	}
 
 	setZoomIndex(zoomIndex) {
-		this.zoomIndex = zoomIndex;
-		this.zoom = Math.pow(this.zoomPow, this.zoomIndex);
+		this.#zoomIndex = zoomIndex;
+		this.#zoom = Math.pow(this.zoomPow, this.#zoomIndex);
 	}
 
 	onZoom(canvasPos, direction) {
 		let previousWorldPos = this.canvasToWorld(canvasPos);
-		this.setZoomIndex(this.zoomIndex - direction);
+		this.setZoomIndex(this.#zoomIndex - direction);
 		let newWorldPos = this.canvasToWorld(canvasPos);
 
 		let dP = newWorldPos.sub(previousWorldPos);
 
-		this.offset = this.offset.add(dP);
+		this.#offset = this.#offset.add(dP);
 
 		this.draw();
 	}
 
 	onReset() {
-		this.offset = this.initialOffset;
+		this.#offset = this.initialOffset;
 		this.setZoomIndex(this.initialZoomIndex);
 		this.draw();
 	}
@@ -167,15 +205,15 @@ draw.TransformedDrawing = class extends draw.Drawing {
 	}
 
 	canvasToWorld(pos) {
-		return pos.mul(1.0 / this.zoom).sub(this.offset);
+		return pos.mul(1.0 / this.#zoom).sub(this.#offset);
 	}
 
 	draw() {
 		super.draw();
 
 		this.context.transform(1, 0, 0, 1, this.width / 2, this.height / 2); // canvas 0 is center
-		this.context.transform(this.zoom, 0, 0, -1 * this.zoom, 0, 0); // zoom and inverse y
-		this.context.transform(1, 0, 0, 1, this.offset.x, this.offset.y); // apply world offset
+		this.context.transform(this.#zoom, 0, 0, -1 * this.#zoom, 0, 0); // zoom and inverse y
+		this.context.transform(1, 0, 0, 1, this.#offset.x, this.#offset.y); // apply world offset
 
 		this.drawGrid();
 
@@ -187,61 +225,93 @@ draw.TransformedDrawing = class extends draw.Drawing {
 	transformedDraw() {
 	}
 
-	drawGrid() {
-		let ctx = this.context;
-
-		ctx.strokeStyle = "rgb(255,255, 255)";
-
-		let bounds = this.getCanvasWorldBounds();
-
-		let subdivision = 10;
-		let step = this.width / subdivision / this.zoom;
-		step = Math.pow(10, Math.ceil(Math.log10(step)));
-
-		let min = (bounds.min.mul(1.0 / step)).ceil().mul(step);
-		let max = (bounds.max.mul(1.0 / step)).floor().mul(step);
-
-		let width = max.x - min.x;
-		let height = max.y - min.y;
-
-		for (let s = -1; s < subdivision * 2; ++s) {
-			ctx.lineWidth = ((s % 2) == 0 ? 0.6 : 0.2) / this.zoom;
-			ctx.beginPath();
-			ctx.moveTo(bounds.min.x, s * step / 2.0 + min.y);
-			ctx.lineTo(bounds.max.x, s * step / 2.0 + min.y);
-			ctx.stroke();
+	drawTip() {
+		if (this.tipContext != undefined && this.showCoords && this.#worldMouse != undefined) {
+			this.clearContext(this.tipContext);
+			this.tipContext.fillText(
+				this.getValueUnitString(this.#worldMouse.x) + ", "
+				+ this.getValueUnitString(this.#worldMouse.y)
+				, 0, 0
+			);
 		}
-		for (let s = -1; s < subdivision * 2; ++s) {
-			ctx.lineWidth = ((s % 2) == 0 ? 0.6 : 0.2) / this.zoom;
-			ctx.beginPath();
-			ctx.moveTo(s * step / 2.0 + min.x, bounds.min.y);
-			ctx.lineTo(s * step / 2.0 + min.x, bounds.max.y);
-			ctx.stroke();
-		}
-
-		let transform = ctx.getTransform();
-		ctx.setTransform();
-		ctx.font = "" + (this.width / 30) + "px serif";
-		ctx.fillStyle = "rgb(255,255, 255)";
-		ctx.fillText(this.getStepString(step), 10, this.height - 10);
-
-		ctx.setTransform(transform);
 	}
 
-	getStepString(step) {
+	drawGrid() {
+		let ctx = this.context;
+		let subdivision = 10;
+		let step = this.width / subdivision / this.#zoom;
+		this.unitStep = Math.pow(10, Math.ceil(Math.log10(step)));
+
+		if (this.showGrid || this.showAxis) {
+			ctx.strokeStyle = "rgb(255,255, 255)";
+
+			let bounds = this.getCanvasWorldBounds();
+
+			let min = (bounds.min.mul(1.0 / this.unitStep)).ceil().mul(this.unitStep);
+
+			for (let s = -10; s < subdivision * 10; ++s) {
+				let offset = s * this.unitStep / 10.0;
+
+				let y = offset + min.y;
+				if (y == 0 && this.showAxis) {
+					ctx.lineWidth = 1.0 / this.#zoom;
+					ctx.strokeStyle = "rgb(255, 0, 0)";
+				}
+				else {
+					ctx.strokeStyle = "rgb(255, 255, 255)";
+					ctx.lineWidth = ((s % 10) == 0 ? 0.6 : 0.2) / this.#zoom;
+				}
+
+				if (this.showGrid || y == 0) {
+					ctx.beginPath();
+					ctx.moveTo(bounds.min.x, y);
+					ctx.lineTo(bounds.max.x, y);
+					ctx.stroke();
+				}
+
+				let x = offset + min.x;
+				if (x == 0 && this.showAxis) {
+					ctx.lineWidth = 1.0 / this.#zoom;
+					ctx.strokeStyle = "rgb(0, 255, 0)";
+				}
+				else {
+					ctx.strokeStyle = "rgb(255, 255, 255)";
+					ctx.lineWidth = ((s % 10) == 0 ? 0.6 : 0.2) / this.#zoom;
+				}
+
+				if (this.showGrid || x == 0) {
+					ctx.beginPath();
+					ctx.moveTo(x, bounds.min.y);
+					ctx.lineTo(x, bounds.max.y);
+					ctx.stroke();
+				}
+			}
+		}
+
+		if (this.showGrid) {
+			let transform = ctx.getTransform();
+			ctx.setTransform();
+			ctx.font = "" + (this.width / 30) + "px serif";
+			ctx.fillStyle = "rgb(255,255, 255)";
+			ctx.fillText(this.getValueUnitString(this.unitStep), 10, this.height - 10);
+			ctx.setTransform(transform);
+		}
+	}
+
+	getValueUnitString(value) {
 		let str = "";
 
-		if (step >= 1e6) {
-			str += (step / 1e6) + " M";
+		if (this.unitStep >= 1e6) {
+			str += Math.round((value / 1e6) * 1e2) / 1e2 + " M";
 		}
-		else if (step >= 1e3) {
-			str += (step / 1e3) + " K";
+		else if (this.unitStep >= 1e3) {
+			str += Math.round(value / 1e3 * 1e2) / 1e2 + " K";
 		}
-		else if (step >= 1) {
-			str += (step) + " ";
+		else if (this.unitStep >= 1) {
+			str += Math.round(value * 1e2) / 1e2 + " ";
 		}
 		else {
-			str += (step / 1e-3) + " m";
+			str += Math.round(value / 1e-3 * 1e2) / 1e2 + " m";
 		}
 
 		return str + this.unit;
