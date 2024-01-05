@@ -33,6 +33,21 @@ let math = {
 				...this.components.map((component, index) => component * scalar)
 			)
 		}
+		ceil() {
+			return new math.Vector(
+				...this.components.map((component, index) => Math.ceil(component))
+			)
+		}
+		floor() {
+			return new math.Vector(
+				...this.components.map((component, index) => Math.floor(component))
+			)
+		}
+		modulo(scalar) {
+			return new math.Vector(
+				...this.components.map((component, index) => component % scalar)
+			)
+		}
 		length2() {
 			let l2 = 0;
 			this.components.map((component, index) => l2 = l2 + component * component)
