@@ -30,6 +30,7 @@
 					<option value="catapult">Catapult</option>
 					<option value="human">Human jump</option>
 					<option value="freefall">Human freefall</option>
+					<option value="ariane5">Ariane 5 at 90°</option>
 				</select>
 			</div>
 			<div class="field">
@@ -64,8 +65,13 @@
 		<div class="group">
 			<label>Rocket</label>
 			<div class="field">
-				<label>mass (kg)</label>
-				<input type="number" id="m" value="1000e3" min="1e-3" step="1"></input>
+				<label>total mass (kg)</label>
+				<input type="number" id="m0" value="1000e3" min="1e-3" step="1"></input>
+			</div>
+			<div class="field">
+				<label>stage description</label>
+				<input title="priority,emptyMass_t,grossMass_t,duration_s,thrust_kN separated by |" type="text"
+					id="stages" value=""></input>
 			</div>
 			<div class="field">
 				<label>section area (m2)</label>
@@ -109,9 +115,13 @@
 			<input id="z" readonly="true" />
 			<input id="z_km3" readonly="true" />
 		</div>
+
+		<div class="field"><label>mass (kg)</label><input id="mass" readonly="true" /></div>
+
+		<div class="field"><label>thrust accelleration (m.s-2)</label><input id="tz" readonly="true" /></div>
 		<div class="field"><label>gravity accelleration (m.s-2)</label><input id="gz" readonly="true" /></div>
 		<div class="field"><label>drag accelleration (m.s-2)</label><input id="dz" readonly="true" /></div>
-		<div class="field"><label>accelleration (m.s-2)</label><input id="accell" readonly="true" /></div>
+		<div class="field"><label>total accelleration (m.s-2)</label><input id="accell" readonly="true" /></div>
 	</div>
 </body>
 

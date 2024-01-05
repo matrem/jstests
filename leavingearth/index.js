@@ -30,11 +30,15 @@ main = new class {
 	parseInputs() {
 		this.simulation.timeScale = parseFloat(this.ui.inputs.timeScale.value);
 		this.simulation.integrationStep_s = parseFloat(this.ui.inputs.timeStep.value);
-		let newMass = parseFloat(this.ui.inputs.rocketMass.value);
-		if (newMass > 0) this.simulation.rocket.mass = newMass;
+
 		this.simulation.sectionArea_m2 = parseFloat(this.ui.inputs.rocketSectionArea.value);
 		this.simulation.dragCoeff = parseFloat(this.ui.inputs.rocketDragCoeff.value);
-		this.simulation.thrust = parseFloat(this.ui.inputs.thrust.value) * 1e3;
+
+		if (this.ui.inputs.stages.length == 0) {
+			let newMass = parseFloat(this.ui.inputs.rocketMass.value);
+			if (newMass > 0) this.simulation.rocket.mass = newMass;
+			this.simulation.thrust = parseFloat(this.ui.inputs.thrust.value) * 1e3;
+		}
 	}
 
 	updateOutputs() {
@@ -43,9 +47,11 @@ main = new class {
 		this.ui.outputs.vs.value = Math.round(this.simulation.rocket.velocity.z * 1e2) / 1e2;
 		this.ui.outputs.altitude_km.value = Math.round(this.simulation.rocket.position.z) / 1e3;
 		this.ui.outputs.altitude_km3.value = Math.round(this.simulation.rocket.position.z / 1e3) / 1e3;
+		this.ui.outputs.thrustAccell.value = Math.round(this.simulation.forces.thrust.z / this.simulation.rocket.mass * 1e3) / 1e3;
 		this.ui.outputs.gravityAccell.value = Math.round(this.simulation.forces.gravity.z / this.simulation.rocket.mass * 1e3) / 1e3;
 		this.ui.outputs.dragAccell.value = Math.round(this.simulation.forces.drag.z / this.simulation.rocket.mass * 1e3) / 1e3;
 		this.ui.outputs.accell.value = Math.round(this.simulation.lastAcceleration.z * 1e3) / 1e3;
+		this.ui.outputs.mass.value = Math.round(this.simulation.rocket.mass * 1e3) / 1e3;
 	}
 
 	drawGrid() {
@@ -80,10 +86,12 @@ main = new class {
 
 			this.scaleX = this.drawing.width / parseFloat(this.ui.inputs.scaleX.value);
 			this.scaleY = this.drawing.height / (parseFloat(this.ui.inputs.scaleY.value) * 1e3);
+
 			this.simulation.reset({
-				initialSpeed: parseFloat(this.ui.inputs.s0.value)
+				initialSpeed_ms: parseFloat(this.ui.inputs.s0.value)
 				, initialAltitude_m: parseFloat(this.ui.inputs.z0.value) * 1e3
 				, initialMass_kg: parseFloat(this.ui.inputs.rocketMass.value)
+				, stageDescription: this.ui.inputs.stages.value
 			});
 			this.time_s = 0;
 		}
@@ -120,6 +128,18 @@ clean = function () {
 }
 
 templatechange = function () {
+	main.ui.inputs.scaleX.value = 1;
+	main.ui.inputs.scaleY.value = 1;
+	main.ui.inputs.timeScale.value = 1;
+	main.ui.inputs.timeStep.value = 1e-3;
+	main.ui.inputs.rocketMass.value = 1;
+	main.ui.inputs.rocketSectionArea.value = 1;
+	main.ui.inputs.rocketDragCoeff.value = 1;
+	main.ui.inputs.s0.value = 0;
+	main.ui.inputs.z0.value = 0;
+	main.ui.inputs.thrust.value = 0;
+	main.ui.inputs.stages.value = "";
+
 	switch (main.ui.inputs.templates.value) {
 		case "escape":
 			main.ui.inputs.scaleX.value = 2e4;
@@ -130,44 +150,37 @@ templatechange = function () {
 			main.ui.inputs.rocketSectionArea.value = 40;
 			main.ui.inputs.rocketDragCoeff.value = 0.75;
 			main.ui.inputs.s0.value = 11.5e3;
-			main.ui.inputs.z0.value = 0;
-			main.ui.inputs.thrust.value = 0;
 			break;
 		case "catapult":
 			main.ui.inputs.scaleX.value = 20;
 			main.ui.inputs.scaleY.value = 250e-3;
-			main.ui.inputs.timeScale.value = 1;
-			main.ui.inputs.timeStep.value = 1e-2;
 			main.ui.inputs.rocketMass.value = 100;
 			main.ui.inputs.rocketSectionArea.value = 1;
 			main.ui.inputs.rocketDragCoeff.value = 0.5;
 			main.ui.inputs.s0.value = 100;
-			main.ui.inputs.z0.value = 0;
-			main.ui.inputs.thrust.value = 0;
 			break;
 		case "human":
-			main.ui.inputs.scaleX.value = 1;
 			main.ui.inputs.scaleY.value = 0.5e-3;
-			main.ui.inputs.timeScale.value = 1;
-			main.ui.inputs.timeStep.value = 1e-3;
 			main.ui.inputs.rocketMass.value = 100;
 			main.ui.inputs.rocketSectionArea.value = 0.3;
 			main.ui.inputs.rocketDragCoeff.value = 1.5;
 			main.ui.inputs.s0.value = 2.5;
-			main.ui.inputs.z0.value = 0;
-			main.ui.inputs.thrust.value = 0;
 			break;
 		case "freefall":
 			main.ui.inputs.scaleX.value = 25;
-			main.ui.inputs.scaleY.value = 1;
-			main.ui.inputs.timeScale.value = 1;
-			main.ui.inputs.timeStep.value = 1e-3;
 			main.ui.inputs.rocketMass.value = 100;
 			main.ui.inputs.rocketSectionArea.value = 0.3;
 			main.ui.inputs.rocketDragCoeff.value = 1.5;
-			main.ui.inputs.s0.value = 0;
 			main.ui.inputs.z0.value = 1;
-			main.ui.inputs.thrust.value = 0;
+			break;
+		case "ariane5":
+			main.ui.inputs.scaleX.value = 10e3;
+			main.ui.inputs.scaleY.value = 10e3;
+			main.ui.inputs.timeScale.value = 100;
+			main.ui.inputs.rocketMass.value = 780e3;
+			main.ui.inputs.rocketSectionArea.value = 100;
+			main.ui.inputs.rocketDragCoeff.value = 0.75;
+			main.ui.inputs.stages.value = "0,74,480,130,14000|0,12.5,174,540,1400|1,4,19,945,67";
 			break;
 	}
 }

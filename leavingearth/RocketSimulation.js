@@ -1,6 +1,15 @@
+Stage = class {
+	constructor({ priority, emptyMass_kg, grossMass_kg, duration_s, thrust_kN }) {
+		this.priority = priority;
+		this.emptyMass_kg = emptyMass_kg;
+		this.grossMass_kg = grossMass_kg;
+		this.flow_kgps = grossMass_kg / duration_s;
+		this.thrust_kN = thrust_kN;
+	}
+}
 
 RocketSimulation = class extends physx.Simulation {
-	thrust = 0;
+	thrust_N = 0;
 	#dragCoeff = 0.75;
 	#sectionArea_m2 = 40;
 	lastAcceleration = 0;
@@ -8,6 +17,8 @@ RocketSimulation = class extends physx.Simulation {
 	#lastZ = 0;
 	#lastV;
 	planet;
+	stages;
+	#currentStage = 0;
 
 	constructor({ planet }) {
 		super({ simulateCallback: undefined });
@@ -16,11 +27,11 @@ RocketSimulation = class extends physx.Simulation {
 
 		this.planet = planet;
 		this.thrust = thrust;
-		this.reset(0, 100e3);
+		this.reset({ initialSpeed_ms: 0, initialAltitude_m: 0, initialMass_kg: 100e3, stageDescription: "" });
 	}
 
 	simulateRocket(dt_s) {
-		this.forces = this.forceIntegration();
+		this.forces = this.forceIntegration(dt_s);
 		task.assertNAN(this.forces.gravity.z);
 
 		this.lastAcceleration = this.rocket.acceleration;
@@ -37,22 +48,80 @@ RocketSimulation = class extends physx.Simulation {
 		this.#lastV = this.rocket.velocity;
 	}
 
-	reset({ initialSpeed, initialAltitude_m, initialMass_kg }) {
+	reset({ initialSpeed_ms, initialAltitude_m, initialMass_kg, stageDescription }) {
 		this.rocket = new physx.Object(
 			{
 				position: new math.Vector(0, 0, initialAltitude_m)
-				, velocity: new math.Vector(0, 0, initialSpeed)
+				, velocity: new math.Vector(0, 0, initialSpeed_ms)
 				, maxSpeed: undefined
 				, acceleration: new math.Vector(0, 0, 0)
 				, mass: initialMass_kg
 			}
 		);
 
+		this.stages = [];
+		this.#currentStage = 0;
+
+		if (stageDescription.length > 0) {
+			let stagesStr = stageDescription.split('|');
+			stagesStr.forEach(s => {
+				let stageStr = s.split(',');
+				if (stageStr.length == 5) {
+					this.stages.push(
+						new Stage({
+							priority: parseFloat(stageStr[0])
+							, emptyMass_kg: parseFloat(stageStr[1] * 1e3)
+							, grossMass_kg: parseFloat(stageStr[2] * 1e3)
+							, duration_s: parseFloat(stageStr[3])
+							, thrust_kN: parseFloat(stageStr[4])
+						})
+					);
+				}
+				else {
+					alert("invalid stage description " + stageStr);
+				}
+			});
+		}
+
 		this.initLastParameters();
 	}
 
+	thrustIntegration(dt_s) {
+		let removedMass_kg = 0;
+		let thrust_kN = 0;
+
+		let stageFound = false;
+		let currentEmpty = true;
+		this.stages.forEach(s => {
+			if (s.priority == this.#currentStage) {
+				stageFound = true;
+				if (s.grossMass_kg != 0) {
+					currentEmpty = false;
+					let dM = s.flow_kgps * dt_s;
+					if (dM > s.grossMass_kg) {
+						dM = s.grossMass_kg
+					}
+					s.grossMass_kg -= dM;
+					removedMass_kg += dM;
+					if (s.grossMass_kg == 0) {
+						removedMass_kg += s.emptyMass_kg;
+					}
+					else {
+						thrust_kN += s.thrust_kN;
+					}
+				}
+			}
+		});
+
+		if (stageFound && currentEmpty) {
+			++this.#currentStage;
+		}
+
+		return { mass_kg: removedMass_kg, thrust_kN: thrust_kN };
+	}
+
 	//Force integration using mid value for parameters
-	forceIntegration() {
+	forceIntegration(dt_s) {
 		let midMass = (this.#lastMass + this.rocket.mass) / 2.0;
 		let midZ = (this.#lastZ + this.rocket.position.z) / 2.0;
 		let midV = this.#lastV.add(this.rocket.velocity).mul(0.5);
@@ -64,8 +133,15 @@ RocketSimulation = class extends physx.Simulation {
 		//Thrust
 		let thrust = new math.Vector(0, 0, 0);
 
-		if (this.thrust > 0) {
-			thrust = new math.Vector(0, 0, this.thrust);
+		//Stages thrust computation
+		if (this.stages.length > 0) {
+			let { mass_kg, thrust_kN } = this.thrustIntegration(dt_s);
+			this.rocket.mass -= mass_kg;
+			this.thrust_N = thrust_kN * 1e3;
+		}
+
+		if (this.thrust_N > 0) {
+			thrust = new math.Vector(0, 0, this.thrust_N);
 		}
 
 		force = force.add(thrust);
