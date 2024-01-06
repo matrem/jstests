@@ -104,8 +104,6 @@ draw.TransformedDrawing = class extends draw.Drawing {
 	}) {
 		super({ id: id, autoClear: autoClear });
 
-		this.buildTipCanvas();
-
 		this.autoTransform = autoTransform;
 		this.largeWorld = largeWorld;
 		this.zoomPow = zoomPow;
@@ -126,11 +124,15 @@ draw.TransformedDrawing = class extends draw.Drawing {
 		let tipCanvas = document.createElement('canvas');
 
 		tipCanvas.id = tipId;
-		tipCanvas.width = this.width / 2.0;
-		tipCanvas.height = this.width / 25;
+		let tipW = this.width / 2.0;
+		let tipH = tipW / 15.0;
+		tipCanvas.width = tipW;
+		tipCanvas.height = tipH;
 		tipCanvas.style.position = "relative";
-		tipCanvas.style.right = (this.width / 2.0) + "px";
+		tipCanvas.style.left = tipW - 10 + "px";
+		tipCanvas.style.bottom = tipH + 10 + "px";
 		tipCanvas.style.backgroundColor = "red"; //"transparent";
+		tipCanvas.style.display = "block";
 
 		canvas.parentNode.insertBefore(tipCanvas, canvas.nextSibling);
 
@@ -144,6 +146,9 @@ draw.TransformedDrawing = class extends draw.Drawing {
 	initialize() {
 		this.context.canvas.style.touchAction = "none";
 		this.context.strokeStyle = "rgb(255,255, 255)";
+
+		this.buildTipCanvas();
+
 		this.initializeEvents();
 	}
 
