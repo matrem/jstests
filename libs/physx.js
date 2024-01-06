@@ -193,3 +193,10 @@ physx.moon = new physx.Planet({
 	, earthDistance_m: 384.4e6
 	, atmosphericDensityFunc_m_kgpm3: altitude_m => 0
 })
+
+physx.sun = new physx.Planet({
+	mass_kg: 1.989e30
+	, radius_m: 696.34e6
+	, earthDistance_m: 147.1e9
+	, atmosphericDensityFunc_m_kgpm3: altitude_m => 0
+})
