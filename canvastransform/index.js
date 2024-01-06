@@ -8,30 +8,38 @@ let main = {
 				, zoomPow: 2.0
 				, showGrid: true
 				, showAxis: true
+				, showCoords: true
+				, autoTransform: true
+				, largeWorld: true
 			});
 			this.draw();
 		}
 
+
+		drawCircle(center, radius, penW) {
+			this.context.lineWidth = penW;
+			center = this.transformToSmallWorld(center);
+			this.context.beginPath();
+			this.context.arc(center.x, center.y, radius - penW / 2.0, 0, 2 * Math.PI);
+			this.context.stroke();
+		}
+
 		transformedDraw() {
-			this.context.lineWidth = 3.0;
+			//this.context.lineWidth = 3.0;
 
-			this.context.beginPath();
-			this.context.arc(100, 50, 50 - 1.5, 0, 2 * Math.PI);
-			this.context.stroke();
-
-			this.context.beginPath();
-			this.context.arc(0, 5, 5 - 1.5, 0, 2 * Math.PI);
-			this.context.stroke();
+			this.drawCircle(new math.Vector(100, 50), 50, 3);
+			this.drawCircle(new math.Vector(0, 5), 5, 3);
 
 			//Draw earth
 			let earthRadius = physx.earth.radius_m;
 			let earthCenter = new math.Vector(0, -1 * earthRadius);
-			let canvasCenter = this.getCanvasWorldCenter();
+			let canvasCenter = this.canvasSmallWorldCenter;
 			draw.bigCircle({
 				context: this.context
 				, canvasCenter: canvasCenter
-				, center: earthCenter, radius: earthRadius
-				, penW: 10, zoom: this.zoom
+				, canvasSize: this.canvasWorldSize
+				, center: this.transformToSmallWorld(earthCenter), radius: earthRadius
+				, penW: 10 / this.zoom
 			});
 
 			//Draw moon
@@ -40,8 +48,9 @@ let main = {
 			draw.bigCircle({
 				context: this.context
 				, canvasCenter: canvasCenter
-				, center: moonCenter, radius: moonRadius
-				, penW: 10, zoom: this.zoom
+				, canvasSize: this.canvasWorldSize
+				, center: this.transformToSmallWorld(moonCenter), radius: moonRadius
+				, penW: 10 / this.zoom
 			});
 		}
 	}

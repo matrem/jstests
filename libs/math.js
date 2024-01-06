@@ -71,6 +71,11 @@ let math = {
 				...this.components.map((component, index) => Math.floor(component))
 			)
 		}
+		round() {
+			return new math.Vector(
+				...this.components.map((component, index) => Math.round(component))
+			)
+		}
 		modulo(scalar) {
 			return new math.Vector(
 				...this.components.map((component, index) => component % scalar)
@@ -94,6 +99,12 @@ let math = {
 			let dot = 0;
 			this.components.map((component, index) => dot = dot + component * components[index]);
 			return dot;
+		}
+		ortho2da() {
+			return new math.Vector(this.y, -this.x);
+		}
+		ortho2db() {
+			return new math.Vector(-this.y, this.x);
 		}
 	}
 }

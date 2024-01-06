@@ -77,19 +77,25 @@ draw.Drawing = class {
 
 	get width() { return this.context.canvas.width }
 	get height() { return this.context.canvas.height }
+
+	get size() { return new math.Vector(this.width, this.height) }
 };
 
 draw.TransformedDrawing = class extends draw.Drawing {
 	#offset = new math.Vector(0, 0); //in world
+	#largeWorldOffset = new math.Vector(0, 0);
+	#largeWorldTile = 1000.0;
 	#zoomIndex = 0;
 	#zoom = 1;
 	#worldMouse;
 
 	get zoom() { return this.#zoom; };
+	get offset() { return this.#offset; };
+	get largeWorldOffset() { return this.#largeWorldOffset; }
 
 	constructor({
 		id, tipId
-		, autoClear = true
+		, autoClear = true, autoTransform = true, largeWorld = false
 		, unit = ""
 		, panButton = 0, resetButton = 1
 		, zoomPow = 1.1
@@ -100,6 +106,8 @@ draw.TransformedDrawing = class extends draw.Drawing {
 
 		this.buildTipCanvas();
 
+		this.autoTransform = autoTransform;
+		this.largeWorld = largeWorld;
 		this.zoomPow = zoomPow;
 		this.panButton = panButton;
 		this.resetButton = resetButton;
@@ -176,10 +184,17 @@ draw.TransformedDrawing = class extends draw.Drawing {
 		});
 	}
 
+	updateLargeWorldOffset() {
+		if (this.largeWorld) {
+			this.#largeWorldOffset = this.#offset.div(this.#largeWorldTile).round().mul(this.#largeWorldTile);
+		}
+	}
+
 	onPan(pan) {
 		this.#offset = this.#offset.add(
 			pan.mul(1.0 / this.#zoom)
 		);
+		this.updateLargeWorldOffset();
 		this.draw();
 	}
 
@@ -196,12 +211,14 @@ draw.TransformedDrawing = class extends draw.Drawing {
 		let dP = newWorldPos.sub(previousWorldPos);
 
 		this.#offset = this.#offset.add(dP);
+		this.updateLargeWorldOffset();
 
 		this.draw();
 	}
 
 	onReset() {
 		this.#offset = this.initialOffset;
+		this.updateLargeWorldOffset();
 		this.setZoomIndex(this.initialZoomIndex);
 		this.draw();
 	}
@@ -215,16 +232,15 @@ draw.TransformedDrawing = class extends draw.Drawing {
 		return this.canvasTransform(new math.Vector(event.offsetX, event.offsetY));
 	}
 
-	getCanvasWorldBounds() {
-		return {
-			min: this.canvasToWorld(this.canvasTransform(new math.Vector(0, this.height)))
-			, max: this.canvasToWorld(this.canvasTransform(new math.Vector(this.width, 0)))
-		}
-	}
+	get canvasWorldCenter() { return this.#offset.mul(-1); }
+	get canvasSmallWorldCenter() { return this.transformToSmallWorld(this.canvasWorldCenter); }
+	get canvasWorldSize() { return this.size.mul(1.0 / this.zoom); }
 
-	getCanvasWorldCenter() {
-		let canvasBounds = this.getCanvasWorldBounds();
-		return canvasBounds.min.mean(canvasBounds.max);
+	getCanvasWorldBounds() {
+		let center = this.canvasWorldCenter;
+		let demiSize = this.size.mul(0.5 / this.zoom);
+
+		return { min: center.sub(demiSize), max: center.add(demiSize) }
 	}
 
 	canvasToWorld(pos) {
@@ -235,8 +251,14 @@ draw.TransformedDrawing = class extends draw.Drawing {
 		super.draw();
 
 		this.context.transform(1, 0, 0, 1, this.width / 2, this.height / 2); // canvas 0 is center
-		this.context.transform(this.#zoom, 0, 0, -1 * this.#zoom, 0, 0); // zoom and inverse y
-		this.context.transform(1, 0, 0, 1, this.#offset.x, this.#offset.y); // apply world offset
+
+		if (this.autoTransform) {
+			this.context.transform(this.#zoom, 0, 0, -1 * this.#zoom, 0, 0); // zoom and inverse y
+			this.context.transform(1, 0, 0, 1, this.#offset.x - this.#largeWorldOffset.x, this.#offset.y - this.#largeWorldOffset.y); // apply world offset
+		}
+		else {
+			this.context.transform(1, 0, 0, -1, 0, 0); // inverse y
+		}
 
 		this.drawGrid();
 
@@ -245,8 +267,12 @@ draw.TransformedDrawing = class extends draw.Drawing {
 		this.context.setTransform();
 	}
 
-	transformedDraw() {
+	transformToSmallWorld(value) {
+		if (this.largeWorld) return value.add(this.#largeWorldOffset);
+		return value;
 	}
+
+	transformedDraw() { }
 
 	drawTip() {
 		let ctx = this.tipContext;
@@ -270,7 +296,6 @@ draw.TransformedDrawing = class extends draw.Drawing {
 			ctx.strokeStyle = "rgb(255,255, 255)";
 
 			let bounds = this.getCanvasWorldBounds();
-
 			let min = (bounds.min.mul(1.0 / this.unitStep)).ceil().mul(this.unitStep);
 
 			for (let s = -10; s < subdivision * 10; ++s) {
@@ -288,8 +313,8 @@ draw.TransformedDrawing = class extends draw.Drawing {
 
 				if (this.showGrid || y == 0) {
 					ctx.beginPath();
-					ctx.moveTo(bounds.min.x, y);
-					ctx.lineTo(bounds.max.x, y);
+					ctx.moveTo(bounds.min.x + this.#largeWorldOffset.x, y + this.#largeWorldOffset.y);
+					ctx.lineTo(bounds.max.x + this.#largeWorldOffset.x, y + this.#largeWorldOffset.y);
 					ctx.stroke();
 				}
 
@@ -305,8 +330,8 @@ draw.TransformedDrawing = class extends draw.Drawing {
 
 				if (this.showGrid || x == 0) {
 					ctx.beginPath();
-					ctx.moveTo(x, bounds.min.y);
-					ctx.lineTo(x, bounds.max.y);
+					ctx.moveTo(x + this.#largeWorldOffset.x, bounds.min.y + this.#largeWorldOffset.y);
+					ctx.lineTo(x + this.#largeWorldOffset.x, bounds.max.y + this.#largeWorldOffset.y);
 					ctx.stroke();
 				}
 			}
@@ -365,20 +390,47 @@ draw.Line = class extends draw.Geometry {
 	}
 };
 
-draw.bigCircle = function ({ context, canvasCenter, center, radius, penW, zoom }) {
+draw.bigCircle = function ({ context, canvasCenter, canvasSize, center, radius, penW }) {
 	let centerToCanvas = canvasCenter.sub(center).normalize();
-	let dotX = centerToCanvas.dot(centerToCanvas.XAxis());
-	let dotY = centerToCanvas.dot(centerToCanvas.YAxis());
+	let xAxis = centerToCanvas.XAxis();
+	let YAxis = centerToCanvas.YAxis();
+	let dotX = centerToCanvas.dot(xAxis);
+	let dotY = centerToCanvas.dot(YAxis);
 
 	let start = Math.acos(dotX) * Math.sign(Math.asin(dotY));
 
-	penW = Math.min(penW / zoom, radius / 4);
-	let portion = Math.max(Math.min(64 * zoom, 64), 1);
-	let angle = Math.PI / portion;
+	let zoom = (2.0 * radius) / canvasSize.x;
+	let portion = Math.max(zoom, 1);
 
+	let localOffset = centerToCanvas.mul(-1 * radius);
+	let localCenter = center.sub(localOffset);
+
+	penW = Math.min(penW, radius / 2.0);
 	context.lineWidth = penW;
 
-	context.beginPath();
-	context.arc(center.x, center.y, radius - penW / 4, start - angle, start + angle);
-	context.stroke();
+	//transform to get arc around 0
+	let transform = context.getTransform();
+	context.transform(1, 0, 0, 1, localCenter.x, localCenter.y);
+
+	if (portion < 1000) {
+		let angle = Math.PI / portion;
+
+		context.beginPath();
+		context.arc(localOffset.x, localOffset.y, radius - penW / 2, start - angle, start + angle);
+		context.stroke();
+	}
+	else { //simplify with a line
+		let len = canvasSize.length();
+		let direction = centerToCanvas.ortho2da();
+		let demiSize = direction.mul(len / 2.0);
+		let center = centerToCanvas.mul(-penW / 2);
+		let start = center.add(demiSize.mul(-1));
+		let end = center.add(demiSize);
+		context.beginPath();
+		context.moveTo(start.x, start.y);
+		context.lineTo(end.x, end.y);
+		context.stroke();
+	}
+
+	context.setTransform(transform);
 }
