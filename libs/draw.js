@@ -358,6 +358,8 @@ draw.TransformedDrawing = class extends draw.Drawing {
 
 		this.drawGrid();
 
+		this.context.strokeStyle = "rgb(255, 255, 255)";
+
 		this.transformedDraw();
 
 		this.context.setTransform();
@@ -382,28 +384,6 @@ draw.TransformedDrawing = class extends draw.Drawing {
 		}
 	}
 
-	setupGridLine(c, s, axisColor) {
-		let ctx = this.context;
-
-		if (c == 0 && this.showAxis) {
-			ctx.lineWidth = 1.0 / this.#zoom;
-			ctx.strokeStyle = axisColor;
-		}
-		else {
-			if ((s % 10) == 0) {
-				ctx.strokeStyle = "rgb(255, 255, 255)";
-				ctx.lineWidth = 0.6 / this.#zoom;
-			}
-			else {
-				ctx.strokeStyle = "rgb(200, 200, 200)";
-				ctx.lineWidth = 0.2 / this.#zoom;
-			}
-
-			//ctx.lineWidth = ((s % 10) == 0 ? 0.6 : 0.2) / this.#zoom;
-		}
-
-	}
-
 	drawGrid() {
 		let ctx = this.context;
 
@@ -417,41 +397,86 @@ draw.TransformedDrawing = class extends draw.Drawing {
 		let subdivisionY = Math.ceil(this.height / this.unitStep / this.#zoom);
 
 		if (this.showGrid || this.showAxis) {
-			ctx.strokeStyle = "rgb(255,255, 255)";
-
 			let bounds = this.getCanvasWorldBounds();
 			let min = (bounds.min.mul(1.0 / this.unitStep)).ceil().mul(this.unitStep);
 
-			for (let s = -10; s < subdivisionY * 10; ++s) {
-				let offset = s * this.unitStep / 10.0;
+			let drawXAxis = false;
+			let drawYAxis = false;
 
-				let y = offset + min.y;
+			if (this.showGrid) {
+				ctx.strokeStyle = "rgb(200, 200, 200)";
+				ctx.lineWidth = 0.2 / this.#zoom;
+				ctx.beginPath();
 
-				if (this.showGrid || y == 0) {
-					this.setupGridLine(y, s, "rgb(255, 0, 0)");
+				for (let s = -10; s < subdivisionY * 10; ++s) {
+					if (s % 10 != 0) {
+						let offset = s * this.unitStep / 10.0;
+						let y = offset + min.y;
+						ctx.moveTo(bounds.min.x + this.#largeWorldOffset.x, y + this.#largeWorldOffset.y);
+						ctx.lineTo(bounds.max.x + this.#largeWorldOffset.x, y + this.#largeWorldOffset.y);
+					}
+				}
+
+				for (let s = -10; s < subdivisionX * 10; ++s) {
+					if (s % 10 != 0) {
+						let offset = s * this.unitStep / 10.0;
+						let x = offset + min.x;
+						ctx.moveTo(x + this.#largeWorldOffset.x, bounds.min.y + this.#largeWorldOffset.y);
+						ctx.lineTo(x + this.#largeWorldOffset.x, bounds.max.y + this.#largeWorldOffset.y);
+					}
+				}
+
+				ctx.stroke();
+
+				ctx.strokeStyle = "rgb(255, 255, 255)";
+				ctx.lineWidth = 0.6 / this.#zoom;
+				ctx.beginPath();
+				for (let s = 0; s < subdivisionY; ++s) {
+					let offset = s * this.unitStep;
+					let y = offset + min.y;
+					if (y != 0) {
+						ctx.moveTo(bounds.min.x + this.#largeWorldOffset.x, y + this.#largeWorldOffset.y);
+						ctx.lineTo(bounds.max.x + this.#largeWorldOffset.x, y + this.#largeWorldOffset.y);
+					}
+					else {
+						drawXAxis = true;
+					}
+				}
+
+				for (let s = 0; s < subdivisionX; ++s) {
+					let offset = s * this.unitStep;
+					let x = offset + min.x;
+					if (x != 0) {
+						ctx.moveTo(x + this.#largeWorldOffset.x, bounds.min.y + this.#largeWorldOffset.y);
+						ctx.lineTo(x + this.#largeWorldOffset.x, bounds.max.y + this.#largeWorldOffset.y);
+					}
+					else {
+						drawYAxis = true;
+					}
+				}
+				ctx.stroke();
+			}
+
+			if (this.showAxis) {
+				ctx.lineWidth = 1.0 / this.#zoom;
+
+				if (drawXAxis) {
+					ctx.strokeStyle = "rgb(255, 0, 0)";
 
 					ctx.beginPath();
-					ctx.moveTo(bounds.min.x + this.#largeWorldOffset.x, y + this.#largeWorldOffset.y);
-					ctx.lineTo(bounds.max.x + this.#largeWorldOffset.x, y + this.#largeWorldOffset.y);
+					ctx.moveTo(bounds.min.x + this.#largeWorldOffset.x, this.#largeWorldOffset.y);
+					ctx.lineTo(bounds.max.x + this.#largeWorldOffset.x, this.#largeWorldOffset.y);
+					ctx.stroke();
+				}
+				if (drawYAxis) {
+					ctx.strokeStyle = "rgb(0, 255, 0)";
+
+					ctx.beginPath();
+					ctx.moveTo(this.#largeWorldOffset.x, bounds.min.y + this.#largeWorldOffset.y);
+					ctx.lineTo(this.#largeWorldOffset.x, bounds.max.y + this.#largeWorldOffset.y);
 					ctx.stroke();
 				}
 			}
-
-			for (let s = -10; s < subdivisionX * 10; ++s) {
-				let offset = s * this.unitStep / 10.0;
-				let x = offset + min.x;
-
-				if (this.showGrid || x == 0) {
-					this.setupGridLine(x, s, "rgb(0, 255, 0)");
-
-					ctx.beginPath();
-					ctx.moveTo(x + this.#largeWorldOffset.x, bounds.min.y + this.#largeWorldOffset.y);
-					ctx.lineTo(x + this.#largeWorldOffset.x, bounds.max.y + this.#largeWorldOffset.y);
-					ctx.stroke();
-				}
-			}
-
-			ctx.strokeStyle = "rgb(255, 255, 255)";
 		}
 
 		if (this.showGrid) {
