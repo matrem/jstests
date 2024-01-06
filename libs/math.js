@@ -89,6 +89,9 @@ let math = {
 		length() {
 			return Math.sqrt(this.length2());
 		}
+		distance(v) {
+			return this.sub(v).length();
+		}
 		normalize() {
 			let l = this.length();
 			return new math.Vector(

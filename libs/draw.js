@@ -87,9 +87,12 @@ draw.TransformedDrawing = class extends draw.Drawing {
 	#largeWorldTile = 1000.0;
 	#zoomIndex = 0;
 	#zoom = 1;
-	#worldPointerPosition;
+	#pinPosition;
 	#touches = [];
+	#panButtonDown = false;
+	#panPosition;
 	#pinchPosition;
+	#pointerMoved = false;
 
 	get zoom() { return this.#zoom; };
 	get offset() { return this.#offset; };
@@ -180,100 +183,64 @@ draw.TransformedDrawing = class extends draw.Drawing {
 
 			if (event.pointerType == "touch") {
 				this.#touches.push(event.pointerId);
-				console.log("touch down " + event.pointerId);
-
-				if (this.#touches.length == 1) {
-					let pos = this.getPointerPos(event);
-					this.#worldPointerPosition = this.canvasToWorld(pos);
-				}
 			}
 
-			if (!this.panDown) {
-				if (event.pointerType == "mouse" && event.button == this.panButton || event.pointerType == "touch" && this.#touches.length == 2) {
-					this.panDown = true;
-					//this.panPosition = this.getPointerPos(event);
-				}
+			if (event.pointerType == "mouse" && event.button == this.panButton || event.pointerType == "touch" && this.#touches.length == 1) {
+				this.#panPosition = this.getPointerPos(event);
+				if (event.pointerType == "mouse") this.#panButtonDown = true;
 			}
-
-			// if (event.isPrimary && event.button == this.panButton) {
-			// 	if (this.panDown == undefined) {
-			// 		this.panDown = event.pointerId;
-			// 		this.panPosition = this.getPointerPos(event);
-			// 	}
-			// 	else {
-			// 		this.pinchDown = event.pointerId;
-			// 		this.pinchPosition = this.getPointerPos(event);
-			// 	}
-			// }
+			else if (event.pointerType == "touch" && this.#touches.length == 2) {
+				this.#pinchPosition = this.getPointerPos(event);
+			}
+			else if (event.pointerType == "mouse" && event.button == this.resetButton || event.pointerType == "touch" && this.#touches.length == 3) {
+				this.onReset();
+			}
 		});
 		canvas.addEventListener("pointerup", (event) => {
 			canvas.releasePointerCapture(event.pointerId);
 
 			if (event.pointerType == "touch") {
 				this.#touches = this.#touches.filter(e => e != event.pointerId);
-				console.log("touch up " + event.pointerId);
 			}
 
-			if (event.pointerType == "mouse" && event.button == this.panButton || event.pointerType == "touch" && this.#touches.length < 2) {
-				this.panDown = false;
-			}
-
-
-			// if (event.isPrimary && event.button == this.panButton) {
-			// 	canvas.releasePointerCapture(event.pointerId);
-
-			// 	if (this.panDown == event.pointerId) {
-			// 		this.panDown = undefined;
-			// 	}
-			// 	if (this.pinchDown == event.pointerId) {
-			// 		this.pinchDown = undefined;
-			// 	}
-			// }
-			if (event.button == this.resetButton) {
-				this.onReset();
+			if (event.pointerType == "mouse" && event.button == this.panButton
+				|| event.pointerType == "touch" && this.#touches.length == 0
+			) {
+				if (!this.#pointerMoved) {
+					this.#pinPosition = this.canvasToWorld(this.getPointerPos(event));
+					this.drawTip();
+				}
+				this.#pointerMoved = false;
+				this.#panButtonDown = false;
 			}
 		});
 		canvas.addEventListener("pointermove", (event) => {
-			if (event.pointerType == "mouse" || event.pointerType == "touch" && this.#touches.length > 0 && this.#touches[0] == event.pointerId) {
-				let previousWorldPointerPosition = this.#worldPointerPosition;
-
-				console.log("move");
-
+			console.log("move " + event.button);
+			if (event.pointerType == "mouse" && this.#panButtonDown
+				|| event.pointerType == "touch" && this.#touches.length == 1 && this.#touches[0] == event.pointerId
+			) {
+				this.#pointerMoved = true;
 				let pos = this.getPointerPos(event);
-				this.#worldPointerPosition = this.canvasToWorld(pos);
-				this.drawTip();
-
-				if (this.panDown) {
-					let dp = this.#worldPointerPosition.sub(previousWorldPointerPosition);
-					this.#worldPointerPosition = previousWorldPointerPosition;
-					this.onPan(dp);
-					console.log(dp.x + ", " + dp.y);
-				}
+				let dp = pos.sub(this.#panPosition);
+				this.#panPosition = pos;
+				this.onPan(dp);
 			}
+			else if (event.pointerType == "touch" && this.#touches.length == 2) {
+				let pos = this.getPointerPos(event);
+				let d0 = this.#panPosition.distance(this.#pinchPosition);
+				let center = this.#panPosition.mean(this.#pinchPosition);
 
-			// if (event.isPrimary) {
-			// 	let pos = this.getPointerPos(event);
-			// 	this.#worldPointerPosition = this.canvasToWorld(pos);
+				if (this.#touches[0] == event.pointerId) {
+					this.#panPosition = pos;
+				}
+				if (this.#touches[1] == event.pointerId) {
+					this.#pinchPosition = pos;
+				}
 
-			// 	if (this.panDown == event.pointerId) {
-			// 		let dP = pos.sub(this.panPosition);
-			// 		this.panPosition = pos;
-			// 		if (this.pinchDown == undefined) {
-			// 			this.onPan(dP);
-			// 		}
-			// 		else {
-			// 			this.onPinch();
-			// 		}
-			// 	}
-			// 	if (this.pinchDown == event.pointerId) {
-			// 		this.pinchPosition = pos;
-			// 		if (this.panDown != undefined) {
-			// 			this.onPinch();
-			// 		}
-			// 	}
+				let d1 = this.#panPosition.distance(this.#pinchPosition);
 
-			// 	this.drawTip();
-			// }
+				this.onZoom(center, d1 - d0);
+			}
 		});
 		canvas.addEventListener("wheel", event => {
 			let canvasPos = this.getPointerPos(event);
@@ -289,7 +256,7 @@ draw.TransformedDrawing = class extends draw.Drawing {
 	}
 
 	onPan(pan) {
-		this.#offset = this.#offset.add(pan);
+		this.#offset = this.#offset.add(pan.mul(1.0 / this.#zoom));
 		this.updateLargeWorldOffset();
 		this.draw();
 	}
@@ -374,11 +341,11 @@ draw.TransformedDrawing = class extends draw.Drawing {
 
 	drawTip() {
 		let ctx = this.tipContext;
-		if (ctx != undefined && this.showCoords && this.#worldPointerPosition != undefined) {
+		if (ctx != undefined && this.showCoords && this.#pinPosition != undefined) {
 			this.clearContext(ctx);
 			ctx.fillText(
-				this.getValueUnitString(this.#worldPointerPosition.x) + ", "
-				+ this.getValueUnitString(this.#worldPointerPosition.y)
+				this.getValueUnitString(this.#pinPosition.x) + ", "
+				+ this.getValueUnitString(this.#pinPosition.y)
 				, ctx.canvas.width - 2, ctx.canvas.height
 			);
 		}
