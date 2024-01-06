@@ -96,13 +96,7 @@ draw.TransformedDrawing = class extends draw.Drawing {
 	}) {
 		super({ id: id, autoClear: autoClear });
 
-		if (tipId != undefined) {
-			this.tipContext = this.getContext(tipId);
-			this.tipContext.fillStyle = "rgb(255,255, 255)";
-			this.tipContext.font = "" + (this.width / 40) + "px serif";
-			this.tipContext.textAlign = "left";
-			this.tipContext.textBaseline = "top";
-		}
+		this.buildTipCanvas();
 
 		this.zoomPow = zoomPow;
 		this.panButton = panButton;
@@ -113,6 +107,28 @@ draw.TransformedDrawing = class extends draw.Drawing {
 		this.showGrid = showGrid;
 		this.showAxis = showAxis;
 		this.showCoords = showCoords;
+	}
+
+	buildTipCanvas(id) {
+		let canvas = this.context.canvas;
+		let tipId = "tip" + canvas.id;
+
+		let tipCanvas = document.createElement('canvas');
+
+		tipCanvas.id = tipId;
+		tipCanvas.width = this.width / 2.0;
+		tipCanvas.height = this.width / 25;
+		tipCanvas.style.position = "relative";
+		tipCanvas.style.right = (this.width / 2.0) + "px";
+		tipCanvas.style.backgroundColor = "transparent";
+
+		canvas.parentNode.insertBefore(tipCanvas, canvas.nextSibling);
+
+		this.tipContext = this.getContext(tipId);
+		this.tipContext.fillStyle = "rgb(255,255, 255)";
+		this.tipContext.font = "" + (tipCanvas.width / 20) + "px serif";
+		this.tipContext.textAlign = "right";
+		this.tipContext.textBaseline = "bottom";
 	}
 
 	initialize() {
@@ -226,12 +242,13 @@ draw.TransformedDrawing = class extends draw.Drawing {
 	}
 
 	drawTip() {
-		if (this.tipContext != undefined && this.showCoords && this.#worldMouse != undefined) {
-			this.clearContext(this.tipContext);
-			this.tipContext.fillText(
+		let ctx = this.tipContext;
+		if (ctx != undefined && this.showCoords && this.#worldMouse != undefined) {
+			this.clearContext(ctx);
+			ctx.fillText(
 				this.getValueUnitString(this.#worldMouse.x) + ", "
 				+ this.getValueUnitString(this.#worldMouse.y)
-				, 0, 0
+				, ctx.canvas.width - 2, ctx.canvas.height
 			);
 		}
 	}
