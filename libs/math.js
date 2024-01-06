@@ -18,6 +18,24 @@ let math = {
 			)
 		}
 
+		XAxis() {
+			return new math.Vector(
+				...this.components.map((component, index) => index == 0 ? 1 : 0)
+			)
+		}
+
+		YAxis() {
+			return new math.Vector(
+				...this.components.map((component, index) => index == 1 ? 1 : 0)
+			)
+		}
+
+		ZAxis() {
+			return new math.Vector(
+				...this.components.map((component, index) => index == 2 ? 1 : 0)
+			)
+		}
+
 		add({ components }) {
 			return new math.Vector(
 				...components.map((component, index) => this.components[index] + component)
@@ -31,6 +49,16 @@ let math = {
 		mul(scalar) {
 			return new math.Vector(
 				...this.components.map((component, index) => component * scalar)
+			)
+		}
+		div(scalar) {
+			return new math.Vector(
+				...this.components.map((component, index) => component / scalar)
+			)
+		}
+		mean({ components }) {
+			return new math.Vector(
+				...components.map((component, index) => (this.components[index] + component) / 2.0)
 			)
 		}
 		ceil() {
@@ -61,6 +89,11 @@ let math = {
 			return new math.Vector(
 				...this.components.map((component, index) => component / l)
 			)
+		}
+		dot({ components }) {
+			let dot = 0;
+			this.components.map((component, index) => dot = dot + component * components[index]);
+			return dot;
 		}
 	}
 }

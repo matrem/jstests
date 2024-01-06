@@ -91,10 +91,11 @@ let physx = {
 	}
 
 	, Planet: class {
-		constructor({ mass_kg, radius_m, atmosphericDensityFunc_m_kgpm3 }) {
+		constructor({ mass_kg, radius_m, atmosphericDensityFunc_m_kgpm3, earthDistance_m }) {
 			this.mass_kg = mass_kg;
 			this.radius_m = radius_m;
 			this.atmosphericDensityFunc_m_kgpm3 = atmosphericDensityFunc_m_kgpm3;
+			this.earthDistance_m = earthDistance_m;
 		}
 	}
 
@@ -148,6 +149,7 @@ let physx = {
 physx.earth = new physx.Planet({
 	mass_kg: 5.972e24
 	, radius_m: 6371e3
+	, earthDistance_m: 0
 	, atmosphericDensityFunc_m_kgpm3: altitude_m => {
 		// https://www.spaceacademy.net.au/watch/debris/atmosmod.htm
 		let aCell = altitude_m / 10e3;
@@ -188,5 +190,6 @@ physx.earth = new physx.Planet({
 physx.moon = new physx.Planet({
 	mass_kg: 7.348e22
 	, radius_m: 1737.4e3
+	, earthDistance_m: 384.4e6
 	, atmosphericDensityFunc_m_kgpm3: altitude_m => 0
 })

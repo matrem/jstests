@@ -85,6 +85,8 @@ draw.TransformedDrawing = class extends draw.Drawing {
 	#zoom = 1;
 	#worldMouse;
 
+	get zoom() { return this.#zoom; };
+
 	constructor({
 		id, tipId
 		, autoClear = true
@@ -218,6 +220,11 @@ draw.TransformedDrawing = class extends draw.Drawing {
 			min: this.canvasToWorld(this.canvasTransform(new math.Vector(0, this.height)))
 			, max: this.canvasToWorld(this.canvasTransform(new math.Vector(this.width, 0)))
 		}
+	}
+
+	getCanvasWorldCenter() {
+		let canvasBounds = this.getCanvasWorldBounds();
+		return canvasBounds.min.mean(canvasBounds.max);
 	}
 
 	canvasToWorld(pos) {
@@ -357,3 +364,21 @@ draw.Line = class extends draw.Geometry {
 		});
 	}
 };
+
+draw.bigCircle = function ({ context, canvasCenter, center, radius, penW, zoom }) {
+	let centerToCanvas = canvasCenter.sub(center).normalize();
+	let dotX = centerToCanvas.dot(centerToCanvas.XAxis());
+	let dotY = centerToCanvas.dot(centerToCanvas.YAxis());
+
+	let start = Math.acos(dotX) * Math.sign(Math.asin(dotY));
+
+	penW = Math.min(penW / zoom, radius / 4);
+	let portion = Math.max(Math.min(64 * zoom, 64), 1);
+	let angle = Math.PI / portion;
+
+	context.lineWidth = penW;
+
+	context.beginPath();
+	context.arc(center.x, center.y, radius - penW / 4, start - angle, start + angle);
+	context.stroke();
+}
