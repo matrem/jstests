@@ -142,6 +142,7 @@ draw.TransformedDrawing = class extends draw.Drawing {
 	}
 
 	initialize() {
+		this.context.canvas.style.touchAction = "none";
 		this.context.strokeStyle = "rgb(255,255, 255)";
 		this.initializeEvents();
 	}
@@ -150,14 +151,14 @@ draw.TransformedDrawing = class extends draw.Drawing {
 		let canvas = this.context.canvas;
 
 		canvas.addEventListener("pointerdown", (event) => {
-			if (event.button == this.panButton) {
+			if (event.isPrimary && event.button == this.panButton) {
 				this.panDown = true;
 				this.panPosition = this.getPointerPos(event);
 				canvas.setPointerCapture(event.pointerId);
 			}
 		});
 		canvas.addEventListener("pointerup", (event) => {
-			if (event.button == this.panButton) {
+			if (event.isPrimary && event.button == this.panButton) {
 				canvas.releasePointerCapture(event.pointerId);
 				this.panDown = false;
 			}
