@@ -152,15 +152,21 @@ draw.TransformedDrawing = class extends draw.Drawing {
 
 		canvas.addEventListener("pointerdown", (event) => {
 			if (event.isPrimary && event.button == this.panButton) {
-				this.panDown = true;
-				this.panPosition = this.getPointerPos(event);
 				canvas.setPointerCapture(event.pointerId);
+
+				if (this.panDown == undefined) {
+					this.panDown = event.pointerId;
+					this.panPosition = this.getPointerPos(event);
+				}
 			}
 		});
 		canvas.addEventListener("pointerup", (event) => {
 			if (event.isPrimary && event.button == this.panButton) {
 				canvas.releasePointerCapture(event.pointerId);
-				this.panDown = false;
+
+				if (this.panDown == event.pointerId) {
+					this.panDown = undefined;
+				}
 			}
 			else if (event.button == this.resetButton) {
 				this.onReset();
@@ -171,7 +177,7 @@ draw.TransformedDrawing = class extends draw.Drawing {
 				let pos = this.getPointerPos(event);
 				this.#worldMouse = this.canvasToWorld(pos);
 
-				if (this.panDown) {
+				if (this.panDown == event.pointerId) {
 					let dP = pos.sub(this.panPosition);
 					this.panPosition = pos;
 					this.onPan(dP);
