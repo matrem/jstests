@@ -5,7 +5,7 @@ let main = {
 				id: "canvas"
 				, tipId: "tipcanvas"
 				, unit: "m"
-				, zoomPow: 1.1
+				, zoomPow: 2
 				, showGrid: true
 				, showAxis: true
 				, showCoords: true

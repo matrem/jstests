@@ -87,6 +87,7 @@ draw.TransformedDrawing = class extends draw.Drawing {
 	#largeWorldTile = 1000.0;
 	#zoomIndex = 0;
 	#zoom = 1;
+	#zoomMouse = true;
 	#pinPosition;
 	#touches = [];
 	#panButtonDown = false;
@@ -239,7 +240,11 @@ draw.TransformedDrawing = class extends draw.Drawing {
 
 				let d1 = this.#panPosition.distance(this.#pinchPosition);
 
-				this.onZoom(center, d1 - d0);
+				if (this.#zoomMouse) {
+					this.#zoomMouse = false;
+					this.zoomPow = 1 + (this.zoomPow - 1) * 0.01;
+				}
+				this.onZoom(center, Math.sign(d0 - d1));
 			}
 		});
 		canvas.addEventListener("wheel", event => {
