@@ -117,28 +117,33 @@ draw.TransformedDrawing = class extends draw.Drawing {
 		this.showCoords = showCoords;
 	}
 
-	buildTipCanvas(id) {
+	buildTipCanvas() {
 		let canvas = this.context.canvas;
 		let tipId = "tip" + canvas.id;
 
-		let tipCanvas = document.createElement('canvas');
 
-		tipCanvas.id = tipId;
+		if (this.tipCanvas != undefined) {
+			this.tipCanvas.remove();
+		}
+
+		this.tipCanvas = document.createElement('canvas');
+
+		this.tipCanvas.id = tipId;
 		let tipW = this.width / 2.0;
 		let tipH = tipW / 15.0;
-		tipCanvas.width = tipW;
-		tipCanvas.height = tipH;
-		tipCanvas.style.position = "relative";
-		tipCanvas.style.left = tipW - 10 + "px";
-		tipCanvas.style.bottom = tipH + 10 + "px";
-		tipCanvas.style.backgroundColor = "red"; //"transparent";
-		tipCanvas.style.display = "block";
+		this.tipCanvas.width = tipW;
+		this.tipCanvas.height = tipH;
+		this.tipCanvas.style.position = "relative";
+		this.tipCanvas.style.left = tipW - 10 + "px";
+		this.tipCanvas.style.bottom = tipH + 10 + "px";
+		this.tipCanvas.style.backgroundColor = "transparent";
+		this.tipCanvas.style.display = "block";
 
-		canvas.parentNode.insertBefore(tipCanvas, canvas.nextSibling);
+		canvas.parentNode.insertBefore(this.tipCanvas, canvas.nextSibling);
 
 		this.tipContext = this.getContext(tipId);
 		this.tipContext.fillStyle = "rgb(255,255, 255)";
-		this.tipContext.font = "" + (tipCanvas.width / 20) + "px serif";
+		this.tipContext.font = "" + (this.tipCanvas.width / 20) + "px serif";
 		this.tipContext.textAlign = "right";
 		this.tipContext.textBaseline = "bottom";
 	}
@@ -147,9 +152,20 @@ draw.TransformedDrawing = class extends draw.Drawing {
 		this.context.canvas.style.touchAction = "none";
 		this.context.strokeStyle = "rgb(255,255, 255)";
 
-		this.buildTipCanvas();
+		window.addEventListener('resize', () => {
+			this.initSize();
+			this.draw();
+		});
+
+		this.initSize();
 
 		this.initializeEvents();
+	}
+
+	initSize() {
+		this.context.canvas.width = this.context.canvas.clientWidth;
+		this.context.canvas.height = this.context.canvas.clientHeight;
+		this.buildTipCanvas();
 	}
 
 	initializeEvents() {
@@ -163,6 +179,10 @@ draw.TransformedDrawing = class extends draw.Drawing {
 					this.panDown = event.pointerId;
 					this.panPosition = this.getPointerPos(event);
 				}
+				else {
+					this.pinchDown = event.pointerId;
+					this.pinchPosition = this.getPointerPos(event);
+				}
 			}
 		});
 		canvas.addEventListener("pointerup", (event) => {
@@ -171,6 +191,9 @@ draw.TransformedDrawing = class extends draw.Drawing {
 
 				if (this.panDown == event.pointerId) {
 					this.panDown = undefined;
+				}
+				if (this.pinchDown == event.pointerId) {
+					this.pinchDown = undefined;
 				}
 			}
 			else if (event.button == this.resetButton) {
@@ -185,7 +208,18 @@ draw.TransformedDrawing = class extends draw.Drawing {
 				if (this.panDown == event.pointerId) {
 					let dP = pos.sub(this.panPosition);
 					this.panPosition = pos;
-					this.onPan(dP);
+					if (this.pinchDown == undefined) {
+						this.onPan(dP);
+					}
+					else {
+						this.onPinch();
+					}
+				}
+				if (this.pinchDown == event.pointerId) {
+					this.pinchPosition = pos;
+					if (this.panDown != undefined) {
+						this.onPinch();
+					}
 				}
 
 				this.drawTip();
