@@ -229,9 +229,9 @@ draw.TransformedDrawing = class extends draw.Drawing {
 			// 		this.pinchDown = undefined;
 			// 	}
 			// }
-			// else if (event.button == this.resetButton) {
-			// 	this.onReset();
-			// }
+			if (event.button == this.resetButton) {
+				this.onReset();
+			}
 		});
 		canvas.addEventListener("pointermove", (event) => {
 			if (event.pointerType == "mouse" || event.pointerType == "touch" && this.#touches.length > 0 && this.#touches[0] == event.pointerId) {
@@ -382,19 +382,39 @@ draw.TransformedDrawing = class extends draw.Drawing {
 		}
 	}
 
+	setupGridLine(c, s, axisColor) {
+		let ctx = this.context;
+
+		if (c == 0 && this.showAxis) {
+			ctx.lineWidth = 1.0 / this.#zoom;
+			ctx.strokeStyle = axisColor;
+		}
+		else {
+			if ((s % 10) == 0) {
+				ctx.strokeStyle = "rgb(255, 255, 255)";
+				ctx.lineWidth = 0.6 / this.#zoom;
+			}
+			else {
+				ctx.strokeStyle = "rgb(200, 200, 200)";
+				ctx.lineWidth = 0.2 / this.#zoom;
+			}
+
+			//ctx.lineWidth = ((s % 10) == 0 ? 0.6 : 0.2) / this.#zoom;
+		}
+
+	}
+
 	drawGrid() {
 		let ctx = this.context;
-		let minSubdivision = 10;
 
-		let stepW = this.width / minSubdivision / this.#zoom;
-		let stepH = this.height / minSubdivision / this.#zoom;
+		let minCellSize = 100;
 
-		let step = Math.min(stepW, stepH);
-
-		let subdivisionX = Math.round(this.width / step / this.#zoom);
-		let subdivisionY = Math.round(this.height / step / this.#zoom);
+		let step = minCellSize / this.#zoom;
 
 		this.unitStep = Math.pow(10, Math.ceil(Math.log10(step)));
+
+		let subdivisionX = Math.ceil(this.width / this.unitStep / this.#zoom);
+		let subdivisionY = Math.ceil(this.height / this.unitStep / this.#zoom);
 
 		if (this.showGrid || this.showAxis) {
 			ctx.strokeStyle = "rgb(255,255, 255)";
@@ -406,16 +426,10 @@ draw.TransformedDrawing = class extends draw.Drawing {
 				let offset = s * this.unitStep / 10.0;
 
 				let y = offset + min.y;
-				if (y == 0 && this.showAxis) {
-					ctx.lineWidth = 1.0 / this.#zoom;
-					ctx.strokeStyle = "rgb(255, 0, 0)";
-				}
-				else {
-					ctx.strokeStyle = "rgb(255, 255, 255)";
-					ctx.lineWidth = ((s % 10) == 0 ? 0.6 : 0.2) / this.#zoom;
-				}
 
 				if (this.showGrid || y == 0) {
+					this.setupGridLine(y, s, "rgb(255, 0, 0)");
+
 					ctx.beginPath();
 					ctx.moveTo(bounds.min.x + this.#largeWorldOffset.x, y + this.#largeWorldOffset.y);
 					ctx.lineTo(bounds.max.x + this.#largeWorldOffset.x, y + this.#largeWorldOffset.y);
@@ -426,22 +440,18 @@ draw.TransformedDrawing = class extends draw.Drawing {
 			for (let s = -10; s < subdivisionX * 10; ++s) {
 				let offset = s * this.unitStep / 10.0;
 				let x = offset + min.x;
-				if (x == 0 && this.showAxis) {
-					ctx.lineWidth = 1.0 / this.#zoom;
-					ctx.strokeStyle = "rgb(0, 255, 0)";
-				}
-				else {
-					ctx.strokeStyle = "rgb(255, 255, 255)";
-					ctx.lineWidth = ((s % 10) == 0 ? 0.6 : 0.2) / this.#zoom;
-				}
 
 				if (this.showGrid || x == 0) {
+					this.setupGridLine(x, s, "rgb(0, 255, 0)");
+
 					ctx.beginPath();
 					ctx.moveTo(x + this.#largeWorldOffset.x, bounds.min.y + this.#largeWorldOffset.y);
 					ctx.lineTo(x + this.#largeWorldOffset.x, bounds.max.y + this.#largeWorldOffset.y);
 					ctx.stroke();
 				}
 			}
+
+			ctx.strokeStyle = "rgb(255, 255, 255)";
 		}
 
 		if (this.showGrid) {
