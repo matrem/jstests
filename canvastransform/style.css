@@ -1,4 +1,7 @@
-body {
+body,
+html {
+	max-width: 100%;
+	min-width: 100%;
 	padding: 0;
 	margin: 0;
 	border: 0;
@@ -12,7 +15,7 @@ div#draw {
 	width: 100vw;
 	height: 100vh;
 	/*border: solid red 3px;*/
-	position: relative;
+	/*position: relative;*/
 }
 
 canvas#canvas {
