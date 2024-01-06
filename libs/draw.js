@@ -130,7 +130,7 @@ draw.TransformedDrawing = class extends draw.Drawing {
 		tipCanvas.height = this.width / 25;
 		tipCanvas.style.position = "relative";
 		tipCanvas.style.right = (this.width / 2.0) + "px";
-		tipCanvas.style.backgroundColor = "transparent";
+		tipCanvas.style.backgroundColor = "red"; //"transparent";
 
 		canvas.parentNode.insertBefore(tipCanvas, canvas.nextSibling);
 
@@ -167,16 +167,18 @@ draw.TransformedDrawing = class extends draw.Drawing {
 			}
 		});
 		canvas.addEventListener("pointermove", (event) => {
-			let pos = this.getPointerPos(event);
-			this.#worldMouse = this.canvasToWorld(pos);
+			if (event.isPrimary) {
+				let pos = this.getPointerPos(event);
+				this.#worldMouse = this.canvasToWorld(pos);
 
-			if (this.panDown) {
-				let dP = pos.sub(this.panPosition);
-				this.panPosition = pos;
-				this.onPan(dP);
+				if (this.panDown) {
+					let dP = pos.sub(this.panPosition);
+					this.panPosition = pos;
+					this.onPan(dP);
+				}
+
+				this.drawTip();
 			}
-
-			this.drawTip();
 		});
 		canvas.addEventListener("wheel", event => {
 			let canvasPos = this.getPointerPos(event);
