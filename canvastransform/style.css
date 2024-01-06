@@ -12,9 +12,9 @@ div#draw {
 	display: block;
 	margin: 0;
 	padding: 0;
-	width: 100vw;
-	height: 100vh;
-	/*border: solid red 3px;*/
+	width: 90vw;
+	height: 90vh;
+	border: solid red 3px;
 	/*position: relative;*/
 }
 
@@ -22,7 +22,7 @@ canvas#canvas {
 	display: block;
 	margin: 0;
 	padding: 0;
-	width: 100%;
-	height: 100%;
+	width: 50%;
+	height: 50%;
 	/*border: solid yellow 3px;*/
 }
