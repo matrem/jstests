@@ -382,8 +382,16 @@ draw.TransformedDrawing = class extends draw.Drawing {
 
 	drawGrid() {
 		let ctx = this.context;
-		let subdivision = 10;
-		let step = this.width / subdivision / this.#zoom;
+		let minSubdivision = 10;
+
+		let stepW = this.width / minSubdivision / this.#zoom;
+		let stepH = this.height / minSubdivision / this.#zoom;
+
+		let step = Math.min(stepW, stepH);
+
+		let subdivisionX = Math.round(this.width / step / this.#zoom);
+		let subdivisionY = Math.round(this.height / step / this.#zoom);
+
 		this.unitStep = Math.pow(10, Math.ceil(Math.log10(step)));
 
 		if (this.showGrid || this.showAxis) {
@@ -392,7 +400,7 @@ draw.TransformedDrawing = class extends draw.Drawing {
 			let bounds = this.getCanvasWorldBounds();
 			let min = (bounds.min.mul(1.0 / this.unitStep)).ceil().mul(this.unitStep);
 
-			for (let s = -10; s < subdivision * 10; ++s) {
+			for (let s = -10; s < subdivisionY * 10; ++s) {
 				let offset = s * this.unitStep / 10.0;
 
 				let y = offset + min.y;
@@ -411,7 +419,10 @@ draw.TransformedDrawing = class extends draw.Drawing {
 					ctx.lineTo(bounds.max.x + this.#largeWorldOffset.x, y + this.#largeWorldOffset.y);
 					ctx.stroke();
 				}
+			}
 
+			for (let s = -10; s < subdivisionX * 10; ++s) {
+				let offset = s * this.unitStep / 10.0;
 				let x = offset + min.x;
 				if (x == 0 && this.showAxis) {
 					ctx.lineWidth = 1.0 / this.#zoom;
