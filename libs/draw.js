@@ -241,7 +241,7 @@ draw.TransformedDrawing = class extends draw.Drawing {
 
 				if (this.#zoomMouse) {
 					this.#zoomMouse = false;
-					this.zoomPow = 1 + (this.zoomPow - 1) * 0.1;
+					this.zoomPow = 1 + (this.zoomPow - 1) * 0.07;
 				}
 				this.onZoom(center, Math.sign(d0 - d1));
 			}
