@@ -36,12 +36,12 @@ div#layout {
 }
 
 div.canvasDraw {
-	flex: 90;
+	flex: 1;
 }
 
 div.toolbar {
 	position: relative;
-	flex: 1 12vmin;
+	flex: 0 12vmin;
 	padding: 1%;
 	background-color: transparent;
 }
@@ -90,6 +90,11 @@ div.toolbar button>img {
 		top: 1vmin;
 		right: 1vmin;
 	}
+
+	div.canvasDraw {
+		height: 0;
+		/*hack to avoid bad height computation*/
+	}
 }
 
 @media only screen and (orientation: landscape) {
@@ -99,5 +104,9 @@ div.toolbar button>img {
 
 	div.toolbar div.toolgroupbottom {
 		bottom: 1vmin;
+	}
+
+	div.canvasDraw {
+		height: 100%;
 	}
 }

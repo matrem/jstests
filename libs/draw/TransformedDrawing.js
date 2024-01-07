@@ -134,10 +134,6 @@ draw.TransformedDrawing = class extends draw.Drawing {
 		return new math.Vector(pos.x - this.width / 2.0, this.height / 2.0 - pos.y);
 	}
 
-	// getPointerPos(event) {
-	// 	return this.canvasTransform(new math.Vector(event.offsetX, event.offsetY));
-	// }
-
 	get canvasWorldCenter() { return this.#offset.mul(-1); }
 	get canvasSmallWorldCenter() { return this.transformToSmallWorld(this.canvasWorldCenter); }
 	get canvasWorldSize() { return this.size.mul(1.0 / this.zoom); }

@@ -53,8 +53,6 @@ draw.Drawing = class {
 				, initializeCallback: (canvas) => {
 					canvas.style.width = "100%";
 					canvas.style.height = "100%";
-					canvas.style.minWidth = "0";
-					canvas.style.minHeight = "0";
 				}
 			});
 

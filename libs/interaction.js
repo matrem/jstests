@@ -10,14 +10,14 @@ let interaction = {
 		}
 	}
 
+	, getPointerPos(event) {
+		return new math.Vector(event.offsetX, event.offsetY);
+	}
+
 	, PrimaryDragInteraction: class {
 		#pointerDown = false;
 		#startPosition
 		#pointerPosition
-
-		getPointerPos(event) {
-			return new math.Vector(event.offsetX, event.offsetY);
-		}
 
 		constructor({
 			element, mouseButton
@@ -28,7 +28,7 @@ let interaction = {
 
 				if (event.isPrimary && (event.pointerType == "touch" || event.button == mouseButton)) {
 					this.#pointerDown = true;
-					this.#startPosition = this.getPointerPos(event);
+					this.#startPosition = interaction.getPointerPos(event);
 					this.#pointerPosition = this.#startPosition;
 
 					if (dragStartCallback != undefined) dragStartCallback(this.#startPosition)
@@ -43,7 +43,7 @@ let interaction = {
 			});
 			element.addEventListener("pointermove", (event) => {
 				if (event.isPrimary && this.#pointerDown) {
-					let pos = this.getPointerPos(event);
+					let pos = interaction.getPointerPos(event);
 					let dp = pos.sub(this.#pointerPosition);
 					this.#pointerPosition = pos;
 					if (dragCallback != undefined) dragCallback(this.#startPosition, this.#pointerPosition, dp);
