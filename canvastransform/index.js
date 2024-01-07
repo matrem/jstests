@@ -93,4 +93,4 @@ let main = {
 }
 
 let draw0 = new main.MainDraw("draw0");
-draw0.container.requestFullscreen();
+draw0.container.addEventListener("pointerdown", (event) => { draw0.container.requestFullscreen(); });
