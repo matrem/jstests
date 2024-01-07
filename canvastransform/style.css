@@ -5,24 +5,20 @@ html {
 	padding: 0;
 	margin: 0;
 	border: 0;
+	box-sizing: border-box;
 }
 
-div#draw {
+*,
+*::before,
+*::after {
+	box-sizing: inherit;
+	padding: inherit;
+	margin: inherit;
+	border: inherit;
+}
+
+div#canvasDraw {
 	overflow: hidden;
-	display: block;
-	margin: 0;
-	padding: 0;
 	width: 100vw;
-	height: 90vh;
-	/*border: solid red 3px;*/
-	/*position: relative;*/
-}
-
-canvas#canvas {
-	display: block;
-	margin: 0;
-	padding: 0;
-	width: 100%;
-	height: 100%;
-	/*border: solid yellow 3px;*/
+	height: 100vh;
 }

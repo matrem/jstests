@@ -2,8 +2,7 @@ let main = {
 	MainDraw: class extends draw.TransformedDrawing {
 		constructor() {
 			super({
-				id: "canvas"
-				, tipId: "tipcanvas"
+				containerId: "canvasDraw"
 				, unit: "m"
 				, zoomPow: 2
 				, showGrid: true
