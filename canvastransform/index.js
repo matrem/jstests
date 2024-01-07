@@ -90,8 +90,78 @@ let main = {
 			}
 		}
 	}
+	, ToolBar: class {
+		static ToolMode = {
+			Pan: "pan",
+			Zoom: "zoom",
+			Info: "info"
+		};
+
+		#toolMode;
+		#fullscreenButton;
+
+		browseModes(browser) {
+			Object.values(main.ToolBar.ToolMode).forEach(v => {
+				let button = document.getElementById(v);
+				browser(v, button);
+			});
+		}
+
+		updateToolButtons() {
+			this.browseModes((mode, button) => {
+				button.className = (mode == this.#toolMode ? "active" : "");
+			});
+		}
+
+		setToolMode(mode) {
+			this.#toolMode = mode;
+			this.updateToolButtons();
+		}
+
+		initToolButtons() {
+			this.browseModes((mode, button) => {
+				button.addEventListener("click", (event) => {
+					this.setToolMode(mode);
+				});
+			});
+
+			this.updateToolButtons();
+		}
+
+		setFullScreenImg(src) {
+			let img = this.#fullscreenButton.getElementsByTagName('img')[0];
+			img.src = "icons/" + src + ".png";
+		}
+
+		constructor({
+			defaultToolMode
+			, layoutId
+			, fullScreenButtonId
+		}) {
+			this.#toolMode = defaultToolMode;
+
+			let layout = document.getElementById(layoutId);
+			this.#fullscreenButton = document.getElementById(fullScreenButtonId);
+
+			this.#fullscreenButton.addEventListener("click", (event) => {
+				if (!document.fullscreenElement) {
+					layout.requestFullscreen();
+					this.setFullScreenImg("exitfullscreen");
+				}
+				else {
+					document.exitFullscreen();
+					this.setFullScreenImg("fullscreen");
+				}
+			});
+
+			this.initToolButtons();
+		}
+	}
 }
 
 let draw0 = new main.MainDraw("draw0");
-//let layout = document.getElementById("layout");
-//layout.addEventListener("pointerdown", (event) => { layout.requestFullscreen(); });
+let toolBar0 = new main.ToolBar({
+	defaultToolMode: main.ToolBar.ToolMode.Pan
+	, layoutId: "layout"
+	, fullScreenButtonId: "fullscreen"
+});
