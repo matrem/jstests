@@ -1,8 +1,8 @@
 let main = {
 	MainDraw: class extends draw.TransformedDrawing {
-		constructor() {
+		constructor(containerId) {
 			super({
-				containerId: "canvasDraw"
+				containerId: containerId
 				, unit: "m"
 				, zoomPow: 2
 				, showGrid: true
@@ -91,4 +91,4 @@ let main = {
 	}
 }
 
-new main.MainDraw();
+new main.MainDraw("draw0");
