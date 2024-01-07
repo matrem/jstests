@@ -1,4 +1,4 @@
-draw.buildCanvas = function ({ container, initializeCallback }) {
+draw.appendCanvas = function ({ container, initializeCallback }) {
 	let context;
 	let canvas = document.createElement("canvas");
 
@@ -48,7 +48,7 @@ draw.Drawing = class {
 		if (this.container != undefined) {
 			this.container.style.position = "relative";
 
-			this.context = draw.buildCanvas({
+			this.context = draw.appendCanvas({
 				container: this.container
 				, initializeCallback: (canvas) => {
 					canvas.style.width = "100%";

@@ -40,40 +40,6 @@ draw.TransformedDrawing = class extends draw.Drawing {
 		this.showCoords = showCoords;
 	}
 
-	// setTipCanvasSize()
-	// {
-	// 	let tipW = this.width / 2.0;
-	// 	let tipH = tipW / 15.0;
-
-	// 	canvas.width = tipW;
-	// 	canvas.height = tipH;
-	// }
-
-	buildTipCanvas() {
-		this.tipContext = draw.buildCanvas({
-			container: this.container
-			, initializeCallback: (canvas) => {
-				let tipW = this.width / 2.0;
-				let tipH = tipW / 15.0;
-
-				canvas.width = tipW;
-				canvas.height = tipH;
-				canvas.style.position = "absolute";
-
-				canvas.style.right = "0px";
-				canvas.style.bottom = "0px";
-				canvas.style.backgroundColor = "red";
-			}
-		});
-
-		let canvas = this.tipContext.canvas;
-
-		this.tipContext.fillStyle = "rgb(255,255, 255)";
-		this.tipContext.font = "" + (canvas.width / 20) + "px serif";
-		this.tipContext.textAlign = "right";
-		this.tipContext.textBaseline = "bottom";
-	}
-
 	initialize(initializeCallback) {
 		super.initialize(() => {
 
@@ -93,6 +59,39 @@ draw.TransformedDrawing = class extends draw.Drawing {
 
 			return inited;
 		});
+	}
+
+	setupTipCanvasSize(canvas) {
+		let tipW = this.width / 2.0;
+		let tipH = tipW / 15.0;
+
+		canvas.width = tipW;
+		canvas.height = tipH;
+
+		this.tipContext.font = "" + (canvas.width / 20) + "px serif";
+		this.tipContext.fillStyle = "rgb(255,255, 255)";
+		this.tipContext.textAlign = "right";
+		this.tipContext.textBaseline = "bottom";
+	}
+
+	buildTipCanvas() {
+		this.tipContext = draw.appendCanvas({
+			container: this.container
+			, initializeCallback: (canvas) => {
+				canvas.style.position = "absolute";
+				canvas.style.right = "0px";
+				canvas.style.bottom = "0px";
+				canvas.style.backgroundColor = "transparent";
+			}
+		});
+
+		this.setupTipCanvasSize(this.tipContext.canvas);
+	}
+
+	onResize() {
+		super.onResize();
+
+		this.setupTipCanvasSize(this.tipContext.canvas);
 	}
 
 	initializeEvents() {
