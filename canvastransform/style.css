@@ -48,17 +48,14 @@ div.toolbar {
 
 div.toolbar div.toolgroupbottom {
 	position: absolute;
-	bottom: 0;
 }
 
 div.toolbar button {
 	padding: 1vmin;
 	border: 0;
-	display: block;
 	height: 10vmin;
 	width: 10vmin;
-	margin-top: 10%;
-	margin-bottom: 10%;
+	margin: 1vmin;
 	background-color: lightblue;
 	border-radius: 1vmin;
 }
@@ -82,4 +79,25 @@ div.toolbar button>img {
 	padding: 0;
 	border: 0;
 	width: 100%;
+}
+
+@media only screen and (orientation: portrait) {
+	div#layout {
+		flex-direction: column;
+	}
+
+	div.toolbar div.toolgroupbottom {
+		top: 1vmin;
+		right: 1vmin;
+	}
+}
+
+@media only screen and (orientation: landscape) {
+	div#layout {
+		flex-direction: row;
+	}
+
+	div.toolbar div.toolgroupbottom {
+		bottom: 1vmin;
+	}
 }

@@ -61,7 +61,7 @@ draw.Drawing = class {
 			if (this.context != undefined) {
 				this.canvas = this.context.canvas;
 
-				window.addEventListener('resize', this.onResize.bind(this));
+				window.addEventListener('resize', this.#onResize.bind(this));
 
 				let subInit = true;
 				if (initializeCallback != undefined) {
@@ -76,7 +76,7 @@ draw.Drawing = class {
 		}
 	}
 
-	onResize() {
+	#onResize() {
 		if (this.autoResize) {
 			this.canvas.width = this.canvas.clientWidth;
 			this.canvas.height = this.canvas.clientHeight;

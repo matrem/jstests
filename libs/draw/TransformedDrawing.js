@@ -4,13 +4,6 @@ draw.TransformedDrawing = class extends draw.Drawing {
 	#largeWorldTile = 1000.0;
 	#zoomIndex = 0;
 	#zoom = 1;
-	#zoomMouse = true;
-	#pinPosition;
-	#touches = [];
-	#panButtonDown = false;
-	#panPosition;
-	#pinchPosition;
-	#pointerMoved = false;
 
 	get zoom() { return this.#zoom; };
 	get offset() { return this.#offset; };
@@ -20,10 +13,9 @@ draw.TransformedDrawing = class extends draw.Drawing {
 		containerId
 		, autoClear = true, autoTransform = true, largeWorld = false
 		, unit = ""
-		, panButton = 0, resetButton = 1
 		, zoomPow = 1.1, minZoomIndex, maxZoomIndex
 		, initialZoomIndex = 0, initialOffset = new math.Vector(0, 0)
-		, showGrid = true, showAxis = true, showCoords = true
+		, showGrid = true, showAxis = true
 	}) {
 		super({ containerId: containerId, autoClear: autoClear });
 
@@ -32,14 +24,11 @@ draw.TransformedDrawing = class extends draw.Drawing {
 		this.zoomPow = zoomPow;
 		this.minZoomIndex = minZoomIndex;
 		this.maxZoomIndex = maxZoomIndex;
-		this.panButton = panButton;
-		this.resetButton = resetButton;
 		this.unit = unit;
 		this.initialZoomIndex = initialZoomIndex;
 		this.initialOffset = initialOffset;
 		this.showGrid = showGrid;
 		this.showAxis = showAxis;
-		this.showCoords = showCoords;
 	}
 
 	initialize(initializeCallback) {
@@ -54,187 +43,113 @@ draw.TransformedDrawing = class extends draw.Drawing {
 				this.context.canvas.style.touchAction = "none";
 				this.context.strokeStyle = "rgb(255,255, 255)";
 
-				this.buildTipCanvas();
-
-				this.initializeEvents();
+				this.#buildTipCanvas();
 			}
 
 			return inited;
 		});
 	}
 
-	setupTipCanvasSize(canvas) {
-		let tipW = this.width / 2.0;
-		let tipH = tipW / 15.0;
+	#setupTipCanvasSize(canvas) {
+		let tipW = Math.min(this.width, this.height) - 10;
+		let tipH = tipW / 20.0;
 
 		canvas.width = tipW;
 		canvas.height = tipH;
 
-		this.tipContext.font = "" + (canvas.width / 20) + "px serif";
+		this.tipContext.font = "" + (tipW / 20) + "px serif";
 		this.tipContext.fillStyle = "rgb(255,255, 255)";
-		this.tipContext.textAlign = "right";
-		this.tipContext.textBaseline = "bottom";
+		this.tipContext.textAlign = "left";
+		this.tipContext.textBaseline = "top";
 	}
 
-	buildTipCanvas() {
+	#buildTipCanvas() {
 		this.tipContext = draw.appendCanvas({
 			container: this.container
 			, initializeCallback: (canvas) => {
 				canvas.style.position = "absolute";
-				canvas.style.right = "0px";
-				canvas.style.bottom = "0px";
+				canvas.style.left = "5px";
+				canvas.style.top = "5px";
 				canvas.style.backgroundColor = "transparent";
 			}
 		});
 
-		this.setupTipCanvasSize(this.tipContext.canvas);
+		this.#setupTipCanvasSize(this.tipContext.canvas);
 	}
 
 	onResize() {
 		super.onResize();
 
 		if (this.tipContext != undefined) {
-			this.setupTipCanvasSize(this.tipContext.canvas);
+			this.#setupTipCanvasSize(this.tipContext.canvas);
 		}
 	}
 
-	initializeEvents() {
-		let canvas = this.context.canvas;
-
-		canvas.addEventListener("pointerdown", (event) => {
-			canvas.setPointerCapture(event.pointerId);
-
-			if (event.pointerType == "touch") {
-				this.#touches.push(event.pointerId);
-			}
-
-			if (event.pointerType == "mouse" && event.button == this.panButton || event.pointerType == "touch" && this.#touches.length == 1) {
-				this.#panPosition = this.getPointerPos(event);
-				if (event.pointerType == "mouse") this.#panButtonDown = true;
-			}
-			else if (event.pointerType == "touch" && this.#touches.length == 2) {
-				this.#pinchPosition = this.getPointerPos(event);
-			}
-			else if (event.pointerType == "mouse" && event.button == this.resetButton || event.pointerType == "touch" && this.#touches.length == 3) {
-				this.onReset();
-			}
-		});
-		canvas.addEventListener("pointerup", (event) => {
-			canvas.releasePointerCapture(event.pointerId);
-
-			if (event.pointerType == "touch") {
-				this.#touches = this.#touches.filter(e => e != event.pointerId);
-			}
-
-			if (event.pointerType == "mouse" && event.button == this.panButton
-				|| event.pointerType == "touch" && this.#touches.length == 0
-			) {
-				if (!this.#pointerMoved) {
-					this.#pinPosition = this.canvasToWorld(this.getPointerPos(event));
-					this.drawTip();
-				}
-				this.#pointerMoved = false;
-				this.#panButtonDown = false;
-			}
-		});
-		canvas.addEventListener("pointermove", (event) => {
-			if (event.pointerType == "mouse" && this.#panButtonDown
-				|| event.pointerType == "touch" && this.#touches.length == 1 && this.#touches[0] == event.pointerId
-			) {
-				this.#pointerMoved = true;
-				let pos = this.getPointerPos(event);
-				let dp = pos.sub(this.#panPosition);
-				this.#panPosition = pos;
-				this.onPan(dp);
-			}
-			else if (event.pointerType == "touch" && this.#touches.length == 2) {
-				let pos = this.getPointerPos(event);
-				let d0 = this.#panPosition.distance(this.#pinchPosition);
-				let center = this.#panPosition.mean(this.#pinchPosition);
-
-				if (this.#touches[0] == event.pointerId) {
-					this.#panPosition = pos;
-				}
-				if (this.#touches[1] == event.pointerId) {
-					this.#pinchPosition = pos;
-				}
-
-				let d1 = this.#panPosition.distance(this.#pinchPosition);
-
-				if (this.#zoomMouse) {
-					this.#zoomMouse = false;
-					this.zoomPow = 1 + (this.zoomPow - 1) * 0.07;
-				}
-				this.onZoom(center, Math.sign(d0 - d1));
-			}
-		});
-		canvas.addEventListener("wheel", event => {
-			let canvasPos = this.getPointerPos(event);
-			this.onZoom(canvasPos, Math.sign(event.deltaY));
-			this.drawTip();
-		});
-	}
-
-	updateLargeWorldOffset() {
+	#updateLargeWorldOffset() {
 		if (this.largeWorld) {
 			this.#largeWorldOffset = this.#offset.div(this.#largeWorldTile).round().mul(this.#largeWorldTile);
 		}
 	}
 
-	onPan(pan) {
+	//pan is in local pixel unit (x right, y down)
+	panView(pan) {
+		pan.y *= -1;
 		this.#offset = this.#offset.add(pan.mul(1.0 / this.#zoom));
-		this.updateLargeWorldOffset();
+		this.#updateLargeWorldOffset();
 		this.draw();
 	}
 
-	setZoomIndex(zoomIndex) {
+	#setZoomIndex(zoomIndex) {
 		if (this.maxZoomIndex != undefined && zoomIndex > this.maxZoomIndex) zoomIndex = this.maxZoomIndex;
 		if (this.minZoomIndex != undefined && zoomIndex < this.minZoomIndex) zoomIndex = this.minZoomIndex;
 		this.#zoomIndex = zoomIndex;
 		this.#zoom = Math.pow(this.zoomPow, this.#zoomIndex);
 	}
 
-	onZoom(canvasPos, direction) {
-		let previousWorldPos = this.canvasToWorld(canvasPos);
-		this.setZoomIndex(this.#zoomIndex - direction);
-		let newWorldPos = this.canvasToWorld(canvasPos);
+	//canvasPos are in local pixel unit (x right, y down)
+	//direction >0 to zoom, <0 to dezoom
+	zoomView(canvasPos, direction) {
+		canvasPos = this.#canvasTransform(canvasPos);
+		let previousWorldPos = this.#canvasToWorld(canvasPos);
+		this.#setZoomIndex(this.#zoomIndex + direction);
+		let newWorldPos = this.#canvasToWorld(canvasPos);
 
 		let dP = newWorldPos.sub(previousWorldPos);
 
 		this.#offset = this.#offset.add(dP);
-		this.updateLargeWorldOffset();
+		this.#updateLargeWorldOffset();
 
 		this.draw();
 	}
 
-	onReset() {
+	resetView() {
 		this.#offset = this.initialOffset;
-		this.updateLargeWorldOffset();
-		this.setZoomIndex(this.initialZoomIndex);
+		this.#updateLargeWorldOffset();
+		this.#setZoomIndex(this.initialZoomIndex);
 		this.draw();
 	}
 
 	//convert windows to local math canvas (0 centered y up)
-	canvasTransform(pos) {
+	#canvasTransform(pos) {
 		return new math.Vector(pos.x - this.width / 2.0, this.height / 2.0 - pos.y);
 	}
 
-	getPointerPos(event) {
-		return this.canvasTransform(new math.Vector(event.offsetX, event.offsetY));
-	}
+	// getPointerPos(event) {
+	// 	return this.canvasTransform(new math.Vector(event.offsetX, event.offsetY));
+	// }
 
 	get canvasWorldCenter() { return this.#offset.mul(-1); }
 	get canvasSmallWorldCenter() { return this.transformToSmallWorld(this.canvasWorldCenter); }
 	get canvasWorldSize() { return this.size.mul(1.0 / this.zoom); }
 
-	getCanvasWorldBounds() {
+	get canvasWorldBounds() {
 		let center = this.canvasWorldCenter;
 		let demiSize = this.size.mul(0.5 / this.zoom);
 
 		return { min: center.sub(demiSize), max: center.add(demiSize) }
 	}
 
-	canvasToWorld(pos) {
+	#canvasToWorld(pos) {
 		return pos.mul(1.0 / this.#zoom).sub(this.#offset);
 	}
 
@@ -253,7 +168,7 @@ draw.TransformedDrawing = class extends draw.Drawing {
 				this.context.transform(1, 0, 0, -1, 0, 0); // inverse y
 			}
 
-			this.drawGrid();
+			this.#drawGrid();
 
 			this.context.strokeStyle = "rgb(255, 255, 255)";
 
@@ -270,19 +185,29 @@ draw.TransformedDrawing = class extends draw.Drawing {
 
 	transformedDraw() { }
 
-	drawTip() {
+	plotPosition(position) {
+
+		position = this.#canvasToWorld(this.#canvasTransform(position));
+
 		let ctx = this.tipContext;
-		if (ctx != undefined && this.showCoords && this.#pinPosition != undefined) {
+		if (ctx != undefined) {
 			this.clearContext(ctx);
+			ctx.fillStyle = "rgb(255,0,0)";
+			let x = this.#getValueUnitString(position.x)
+			let xLen = ctx.measureText(x).width;
+			let sep = " | ";
+			ctx.fillText(x, 0, 0);
+			ctx.fillStyle = "rgb(255,255,255)";
+			ctx.fillText(sep, xLen, 0);
+			ctx.fillStyle = "rgb(0,255,0)";
 			ctx.fillText(
-				this.getValueUnitString(this.#pinPosition.x) + ", "
-				+ this.getValueUnitString(this.#pinPosition.y)
-				, ctx.canvas.width - 2, ctx.canvas.height
+				this.#getValueUnitString(position.y)
+				, xLen + ctx.measureText(sep).width, 0
 			);
 		}
 	}
 
-	drawGrid() {
+	#drawGrid() {
 		let ctx = this.context;
 
 		let minCellSize = 100;
@@ -295,7 +220,7 @@ draw.TransformedDrawing = class extends draw.Drawing {
 		let subdivisionY = Math.ceil(this.height / this.unitStep / this.#zoom);
 
 		if (this.showGrid || this.showAxis) {
-			let bounds = this.getCanvasWorldBounds();
+			let bounds = this.canvasWorldBounds;
 			let min = (bounds.min.mul(1.0 / this.unitStep)).ceil().mul(this.unitStep);
 
 			let drawXAxis = false;
@@ -382,12 +307,12 @@ draw.TransformedDrawing = class extends draw.Drawing {
 			ctx.setTransform();
 			ctx.font = "" + (this.width / 30) + "px serif";
 			ctx.fillStyle = "rgb(255,255, 255)";
-			ctx.fillText(this.getValueUnitString(this.unitStep), 10, this.height - 10);
+			ctx.fillText(this.#getValueUnitString(this.unitStep), 10, this.height - 10);
 			ctx.setTransform(transform);
 		}
 	}
 
-	getValueUnitString(value) {
+	#getValueUnitString(value) {
 		let str = "";
 
 		if (this.unitStep >= 1e6) {

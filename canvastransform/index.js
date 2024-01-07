@@ -4,13 +4,13 @@ let main = {
 			super({
 				containerId: containerId
 				, unit: "m"
-				, zoomPow: 2
+				, zoomPow: 1.05
 				, showGrid: true
 				, showAxis: true
 				, showCoords: true
 				, autoTransform: true
 				, largeWorld: true
-				, maxZoomIndex: 17
+				, maxZoomIndex: 240
 			});
 			this.draw();
 		}
@@ -91,17 +91,15 @@ let main = {
 		}
 	}
 	, ToolBar: class {
-		static ToolMode = {
-			Pan: "pan",
-			Zoom: "zoom",
-			Info: "info"
-		};
-
+		#toolModes;
 		#toolMode;
+
+		get toolMode() { return this.#toolMode; }
+
 		#fullscreenButton;
 
 		browseModes(browser) {
-			Object.values(main.ToolBar.ToolMode).forEach(v => {
+			this.#toolModes.forEach(v => {
 				let button = document.getElementById(v);
 				browser(v, button);
 			});
@@ -128,30 +126,24 @@ let main = {
 			this.updateToolButtons();
 		}
 
-		setFullScreenImg(src) {
+		updateFullScreenImg(fullscreen) {
 			let img = this.#fullscreenButton.getElementsByTagName('img')[0];
-			img.src = "icons/" + src + ".png";
+			img.src = "icons/" + (fullscreen ? "exit" : "") + "fullscreen.png";
 		}
 
 		constructor({
-			defaultToolMode
-			, layoutId
-			, fullScreenButtonId
+			toolModes, defaultToolMode
+			, buttonMappings, fullscreenButtonId
 		}) {
+			this.#toolModes = toolModes;
 			this.#toolMode = defaultToolMode;
 
-			let layout = document.getElementById(layoutId);
-			this.#fullscreenButton = document.getElementById(fullScreenButtonId);
-
-			this.#fullscreenButton.addEventListener("click", (event) => {
-				if (!document.fullscreenElement) {
-					layout.requestFullscreen();
-					this.setFullScreenImg("exitfullscreen");
+			buttonMappings.forEach(m => {
+				let button = document.getElementById(m.buttonId);
+				if (fullscreenButtonId == m.buttonId) {
+					this.#fullscreenButton = button;
 				}
-				else {
-					document.exitFullscreen();
-					this.setFullScreenImg("fullscreen");
-				}
+				button.addEventListener("click", event => m.callback());
 			});
 
 			this.initToolButtons();
@@ -160,8 +152,51 @@ let main = {
 }
 
 let draw0 = new main.MainDraw("draw0");
+
+let layoutElement = document.getElementById("layout");
+
+const toolModes = {
+	Pan: "pan",
+	Zoom: "zoom",
+	Info: "info"
+};
+
 let toolBar0 = new main.ToolBar({
-	defaultToolMode: main.ToolBar.ToolMode.Pan
-	, layoutId: "layout"
-	, fullScreenButtonId: "fullscreen"
+	toolModes: Object.values(toolModes), defaultToolMode: toolModes.Pan
+	, buttonMappings: [
+		{
+			buttonId: "fullscreen"
+			, callback: () => {
+				toolBar0.updateFullScreenImg(
+					interaction.toggleFullScreen(layoutElement)
+				);
+			}
+		}
+		, { buttonId: "reset", callback: () => draw0.resetView() }
+	]
+	, fullscreenButtonId: "fullscreen"
+});
+
+new interaction.PrimaryDragInteraction({
+	element: draw0.canvas, mouseButton: 0
+	, dragStartCallback: (current) => {
+		switch (toolBar0.toolMode) {
+			case toolModes.Info:
+				draw0.plotPosition(current);
+				break;
+		}
+	}
+	, dragCallback: (start, current, dp) => {
+		switch (toolBar0.toolMode) {
+			case toolModes.Pan:
+				draw0.panView(dp);
+				break;
+			case toolModes.Zoom:
+				draw0.zoomView(start, dp.y);
+				break;
+			case toolModes.Info:
+				draw0.plotPosition(current);
+				break;
+		}
+	}
 });
