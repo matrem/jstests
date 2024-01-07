@@ -93,7 +93,9 @@ draw.TransformedDrawing = class extends draw.Drawing {
 	onResize() {
 		super.onResize();
 
-		this.setupTipCanvasSize(this.tipContext.canvas);
+		if (this.tipContext != undefined) {
+			this.setupTipCanvasSize(this.tipContext.canvas);
+		}
 	}
 
 	initializeEvents() {

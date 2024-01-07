@@ -93,5 +93,5 @@ let main = {
 }
 
 let draw0 = new main.MainDraw("draw0");
-let layout = document.getElementById("layout");
-layout.addEventListener("pointerdown", (event) => { layout.requestFullscreen(); });
+//let layout = document.getElementById("layout");
+//layout.addEventListener("pointerdown", (event) => { layout.requestFullscreen(); });
