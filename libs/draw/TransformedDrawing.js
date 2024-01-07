@@ -3,6 +3,7 @@ draw.TransformedDrawing = class extends draw.Drawing {
 	#largeWorldOffset = new math.Vector(0, 0);
 	#largeWorldTile = 1000.0;
 	#zoomIndex = 0;
+	get zoomIndex() { return this.#zoomIndex; };
 	#zoom = 1;
 
 	get zoom() { return this.#zoom; };
@@ -301,8 +302,10 @@ draw.TransformedDrawing = class extends draw.Drawing {
 		if (this.showGrid) {
 			let transform = ctx.getTransform();
 			ctx.setTransform();
-			ctx.font = "" + (this.width / 30) + "px serif";
+			ctx.font = "" + (Math.min(this.width, this.height) / 20) + "px serif";
 			ctx.fillStyle = "rgb(255,255, 255)";
+			ctx.textAlign = "left";
+			ctx.textBaseline = "bottom";
 			ctx.fillText(this.#getValueUnitString(this.unitStep), 10, this.height - 10);
 			ctx.setTransform(transform);
 		}

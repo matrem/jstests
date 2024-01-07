@@ -56,7 +56,7 @@ draw.bigCircle = function ({ context, canvasCenter, canvasSize, center, radius, 
 
 	let start = Math.acos(dotX) * Math.sign(Math.asin(dotY));
 
-	let zoom = (2.0 * radius) / canvasSize.x;
+	let zoom = radius / Math.max(canvasSize.x, canvasSize.y);
 	let portion = Math.max(zoom, 1);
 
 	let localOffset = centerToCanvas.mul(-1 * radius);
