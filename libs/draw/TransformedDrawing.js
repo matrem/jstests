@@ -21,7 +21,7 @@ draw.TransformedDrawing = class extends draw.Drawing {
 		, autoClear = true, autoTransform = true, largeWorld = false
 		, unit = ""
 		, panButton = 0, resetButton = 1
-		, zoomPow = 1.1
+		, zoomPow = 1.1, minZoomIndex, maxZoomIndex
 		, initialZoomIndex = 0, initialOffset = new math.Vector(0, 0)
 		, showGrid = true, showAxis = true, showCoords = true
 	}) {
@@ -30,6 +30,8 @@ draw.TransformedDrawing = class extends draw.Drawing {
 		this.autoTransform = autoTransform;
 		this.largeWorld = largeWorld;
 		this.zoomPow = zoomPow;
+		this.minZoomIndex = minZoomIndex;
+		this.maxZoomIndex = maxZoomIndex;
 		this.panButton = panButton;
 		this.resetButton = resetButton;
 		this.unit = unit;
@@ -184,6 +186,8 @@ draw.TransformedDrawing = class extends draw.Drawing {
 	}
 
 	setZoomIndex(zoomIndex) {
+		if (this.maxZoomIndex != undefined && zoomIndex > this.maxZoomIndex) zoomIndex = this.maxZoomIndex;
+		if (this.minZoomIndex != undefined && zoomIndex < this.minZoomIndex) zoomIndex = this.minZoomIndex;
 		this.#zoomIndex = zoomIndex;
 		this.#zoom = Math.pow(this.zoomPow, this.#zoomIndex);
 	}

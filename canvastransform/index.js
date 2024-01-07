@@ -10,6 +10,7 @@ let main = {
 				, showCoords: true
 				, autoTransform: true
 				, largeWorld: true
+				, maxZoomIndex: 17
 			});
 			this.draw();
 		}
@@ -91,4 +92,5 @@ let main = {
 	}
 }
 
-new main.MainDraw("draw0");
+let draw0 = new main.MainDraw("draw0");
+draw0.container.requestFullscreen();
