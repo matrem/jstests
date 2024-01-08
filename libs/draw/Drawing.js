@@ -18,31 +18,37 @@ draw.appendCanvas = function ({ container, initializeCallback }) {
 }
 
 draw.Drawing = class {
-	#inited = false;
-	get inited() { return this.#inited; }
-
 	#containerId;
 	get containerId() { return this.#containerId; }
 
 	#container;
 	get container() { return this.#container; }
 
-	#initializeCallback;
 	context;
 	canvas;
 
 	constructor({
-		containerId
-		, autoClear = true, autoResize = true
-		, initializeCallback
+		containerId,
+		autoClear = true, autoResize = true
 	}) {
 		this.autoClear = autoClear;
 		this.autoResize = autoResize;
 		this.#containerId = containerId;
-		this.#initializeCallback = initializeCallback;
 	}
 
-	initialize(initializeCallback) {
+	static build({
+		containerId,
+		autoClear = true, autoResize = true
+		, initializeContextCallback
+	}) {
+		let d = new draw.Drawing({
+			containerId: containerId, autoClear: autoClear, autoResize: autoResize
+		});
+		d.initialize(initializeContextCallback);
+		return d;
+	}
+
+	initialize(initializeContextCallback) {
 		this.#container = document.getElementById(this.containerId);
 
 		if (this.container != undefined) {
@@ -61,13 +67,7 @@ draw.Drawing = class {
 
 				window.addEventListener('resize', this.#onResize.bind(this));
 
-				let subInit = true;
-				if (initializeCallback != undefined) {
-					subInit = initializeCallback();
-					if (subInit == undefined) subInit = true;
-				}
-
-				this.#inited = subInit;
+				if (initializeContextCallback != undefined) initializeContextCallback(this.context);
 			}
 		}
 		else {
@@ -94,13 +94,7 @@ draw.Drawing = class {
 	}
 
 	draw() {
-		if (!this.#inited) {
-			this.initialize(this.#initializeCallback);
-		}
-
-		if (this.#inited) {
-			if (this.autoClear) this.clear();
-		}
+		if (this.autoClear && this.context != undefined) this.clear();
 	}
 
 	get width() { return this.context.canvas.width }

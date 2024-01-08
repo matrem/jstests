@@ -5,12 +5,12 @@ let monitor = {
 		step = 0.1;
 
 		constructor({ containerId, step = 0.1 }) {
-			this.monitor = new draw.Drawing({
+			this.monitor = draw.Drawing.build({
 				containerId: containerId
 				, autoClear: false
-				, initializeCallback: (ctx) => {
-					this.monitor.context.strokeStyle = "rgb(200, 0, 0)";
-					this.monitor.context.lineWidth = 1;
+				, initializeContextCallback: ctx => {
+					ctx.strokeStyle = "rgb(200, 0, 0)";
+					ctx.lineWidth = 1;
 				}
 			});
 			this.step = step;

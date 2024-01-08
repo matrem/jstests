@@ -9,11 +9,11 @@ main = new class {
 	//Drawing
 	monitorDrawing = new monitor.Drawing({ containerId: "scp" });
 
-	drawing = new draw.Drawing({
+	drawing = draw.Drawing.build({
 		containerId: "draw"
-		, initializeCallback: () => {
-			this.drawing.context.fillStyle = "rgb(200, 0, 0)";
-			this.drawing.context.lineWidth = 1;
+		, initializeContextCallback: context => {
+			context.fillStyle = "rgb(200, 0, 0)";
+			context.lineWidth = 1;
 		}
 	});
 
@@ -83,6 +83,8 @@ main = new class {
 			this.drawGrid();
 		}
 		, startCallback: () => {
+			this.drawGrid();
+
 			this.drawing.context.strokeStyle = draw.randomColor({ r: { min: 100, max: 255 }, g: { min: 50, max: 255 }, b: { min: 50, max: 255 } });
 			this.drawing.context.lineWidth = 3;
 
@@ -125,7 +127,6 @@ stop = function () {
 }
 
 clean = function () {
-	main.drawing.clear();
 	main.drawGrid();
 }
 

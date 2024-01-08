@@ -11,14 +11,16 @@ draw.TransformedDrawing = class extends draw.Drawing {
 	get largeWorldOffset() { return this.#largeWorldOffset; }
 
 	constructor({
-		containerId
-		, autoClear = true, autoTransform = true, largeWorld = false
-		, unit = ""
-		, zoomPow = 1.1, minZoomIndex, maxZoomIndex
-		, initialZoomIndex = 0, initialOffset = new math.Vector(0, 0)
-		, showGrid = true, showAxis = true
+		containerId,
+		autoClear = true, autoResize = true, autoTransform = true,
+		largeWorld = false,
+		unit = "",
+		zoomPow = 1.1,
+		minZoomIndex, maxZoomIndex, initialZoomIndex = 0,
+		initialOffset = new math.Vector(0, 0),
+		showGrid = true, showAxis = true
 	}) {
-		super({ containerId: containerId, autoClear: autoClear });
+		super({ containerId: containerId, autoClear: autoClear, autoResize: autoResize });
 
 		this.autoTransform = autoTransform;
 		this.largeWorld = largeWorld;
@@ -32,22 +34,38 @@ draw.TransformedDrawing = class extends draw.Drawing {
 		this.showAxis = showAxis;
 	}
 
-	initialize(initializeCallback) {
-		super.initialize(() => {
+	static build({
+		containerId,
+		autoClear = true, autoResize = true, autoTransform = true,
+		largeWorld = false,
+		unit = "",
+		zoomPow = 1.1,
+		minZoomIndex, maxZoomIndex, initialZoomIndex = 0,
+		initialOffset = new math.Vector(0, 0),
+		showGrid = true, showAxis = true
+		, initializeContextCallback
+	}) {
+		let d = new draw.TransformedDrawing({
+			containerId: containerId
+			, autoClear: autoClear, autoResize: autoResize, autoTransform: autoTransform,
+			largeWorld: largeWorld, unit: unit
+			, zoomPow: zoomPow, minZoomIndex: minZoomIndex, maxZoomIndex: maxZoomIndex, initialZoomIndex: initialZoomIndex,
+			initialOffset: initialOffset, showGrid: showGrid, showAxis: showAxis
+		});
+		d.initialize(initializeContextCallback);
+		return d;
+	}
 
-			let inited = true;
-			if (initializeCallback != undefined) {
-				inited = initializeCallback();
-			}
-
-			if (inited) {
-				this.context.canvas.style.touchAction = "none";
-				this.context.strokeStyle = "rgb(255,255, 255)";
+	initialize(initializeContextCallback) {
+		super.initialize(context => {
+			if (context != undefined) {
+				context.canvas.style.touchAction = "none";
+				// this.context.strokeStyle = "rgb(255,255, 255)";
 
 				this.#buildTipCanvas();
-			}
 
-			return inited;
+				if (initializeContextCallback != undefined) initializeContextCallback(context);
+			}
 		});
 	}
 
@@ -153,7 +171,7 @@ draw.TransformedDrawing = class extends draw.Drawing {
 	draw() {
 		super.draw();
 
-		if (this.inited) {
+		if (this.context != undefined) {
 
 			this.context.transform(1, 0, 0, 1, this.width / 2, this.height / 2); // canvas 0 is center
 

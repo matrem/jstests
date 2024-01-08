@@ -76,24 +76,22 @@ function drawTargetAndChasers() {
 	});
 }
 
-drawing = new draw.Drawing({
+drawing = draw.Drawing.build({
 	containerId: "canvas"
-	, initializeCallback: () => { //Init
-		drawing.context.fillStyle = "rgb(200, 0, 0)";
-		drawing.context.strokeStyle = "rgb(200, 0, 0)";
-		drawing.context.lineWidth = 3;
+	, initializeContextCallback: context => { //Init
+		context.fillStyle = "rgb(200, 0, 0)";
+		context.strokeStyle = "rgb(200, 0, 0)";
+		context.lineWidth = 3;
 
-		drawing.canvas.addEventListener("pointermove", (event) => {
+		context.canvas.addEventListener("pointermove", event => {
 			mouse.x = event.clientX;
 			mouse.y = event.clientY;
 		});
 	}
-})
+});
 
 task = new task.Work({
 	initializeCallback: () => {
-		drawing.draw();
-
 		for (c = 0; c < chaserCount; ++c) {
 			x = Math.random() * drawing.width;
 			y = Math.random() * drawing.height;

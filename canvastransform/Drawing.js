@@ -11,6 +11,7 @@ Drawing = class extends draw.TransformedDrawing {
 			, largeWorld: true
 			, maxZoomIndex: 240
 		});
+		this.initialize();
 		this.draw();
 	}
 
