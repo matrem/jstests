@@ -52,7 +52,7 @@ let task = {
 
 	, assertNAN(value) {
 		if (value != value) {
-			alert("nan");
+			console.error("nan");
 		}
 	}
 

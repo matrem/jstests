@@ -34,7 +34,8 @@
 					<option value="catapult">Catapult</option>
 					<option value="human">Human jump</option>
 					<option value="freefall">Human freefall</option>
-					<option value="ariane5">Ariane 5 at 90°</option>
+					<option value="ariane5a">Ariane 5 launch</option>
+					<option value="ariane5b">Ariane 5 orbiting</option>
 				</select>
 			</div>
 			<div class="field">
@@ -74,8 +75,13 @@
 			</div>
 			<div class="field">
 				<label>stage description</label>
-				<input title="priority,emptyMass_t,grossMass_t,duration_s,thrust_kN separated by |" type="text"
-					id="stages" value=""></input>
+				<input title="priority,emptyMass_t,grossMass_t,duration_s,thrust_kN. Each stage are separated by |"
+					type="text" id="stages" value=""></input>
+			</div>
+			<div class="field">
+				<label>pitch description</label>
+				<input title="time_s,angle_deg. Each step will be interpolated and are separated by |" type="text"
+					id="pitch" value=""></input>
 			</div>
 			<div class="field">
 				<label>section area (m2)</label>

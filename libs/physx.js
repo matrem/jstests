@@ -164,9 +164,7 @@ physx.earth = new physx.Planet({
 
 			let p = Math.pow(10, bottomValue + cursor * valueDelta);
 
-			if (p != p) {
-				alert("nan");
-			}
+			task.assertNAN(p);
 
 			return p;
 		}

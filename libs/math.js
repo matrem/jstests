@@ -1,6 +1,9 @@
 let math = {
+	deg2rad: function (v) {
+		return v * Math.PI / 180.0;
+	}
 	// Vector with any number of components
-	Vector: class {
+	, Vector: class {
 		constructor(...components) {
 			this.components = components;
 		}

@@ -5,6 +5,7 @@ let ui = {
 			, planets: document.getElementById("planets")
 			, thrust: document.getElementById("thrust")
 			, stages: document.getElementById("stages")
+			, pitch: document.getElementById("pitch")
 			, s0: document.getElementById("s0")
 			, z0: document.getElementById("z0")
 			, scaleX: document.getElementById("sx")
