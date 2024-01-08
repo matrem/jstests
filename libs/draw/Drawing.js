@@ -64,6 +64,7 @@ draw.Drawing = class {
 				let subInit = true;
 				if (initializeCallback != undefined) {
 					subInit = initializeCallback();
+					if (subInit == undefined) subInit = true;
 				}
 
 				this.#inited = subInit;

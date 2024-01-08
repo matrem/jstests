@@ -59,7 +59,7 @@ simulation = new physx.Simulation({
 //Drawing
 
 function drawTargetAndChasers() {
-	drawing.clear();
+	drawing.draw();
 
 	new draw.Circle({
 		color: "rgb(200, 0, 0)"
@@ -77,20 +77,23 @@ function drawTargetAndChasers() {
 }
 
 drawing = new draw.Drawing({
-	id: "canvas"
-	, initializeCallback: (ctx) => { //Init
-		ctx.fillStyle = "rgb(200, 0, 0)";
-		ctx.strokeStyle = "rgb(200, 0, 0)";
-		ctx.lineWidth = 3;
-	}
-	, mouseMoveCallback: (event) => { //MouseMove
-		mouse.x = event.clientX;
-		mouse.y = event.clientY;
+	containerId: "canvas"
+	, initializeCallback: () => { //Init
+		drawing.context.fillStyle = "rgb(200, 0, 0)";
+		drawing.context.strokeStyle = "rgb(200, 0, 0)";
+		drawing.context.lineWidth = 3;
+
+		drawing.canvas.addEventListener("pointermove", (event) => {
+			mouse.x = event.clientX;
+			mouse.y = event.clientY;
+		});
 	}
 })
 
 task = new task.Work({
 	initializeCallback: () => {
+		drawing.draw();
+
 		for (c = 0; c < chaserCount; ++c) {
 			x = Math.random() * drawing.width;
 			y = Math.random() * drawing.height;

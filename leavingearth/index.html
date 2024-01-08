@@ -5,11 +5,17 @@
 	<script src="../libs/math.js" defer></script>
 	<script src="../libs/task.js" defer></script>
 	<script src="../libs/physx.js" defer></script>
+
 	<script src="../libs/draw.js" defer></script>
+	<script src="../libs/draw/Drawing.js" defer></script>
+	<script src="../libs/draw/Geometry.js" defer></script>
+
 	<script src="../libs/monitor.js" defer></script>
+
 	<script src="RocketSimulation.js" defer></script>
 	<script src="ui.js" defer></script>
 	<script src="index.js" defer></script>
+
 	<link rel="stylesheet" href="../libs/style.css" />
 	<link rel="stylesheet" href="style.css" />
 	<meta charset="utf-8" />
@@ -17,9 +23,7 @@
 </head>
 
 <body>
-	<div id="draw">
-		<canvas id="canvas" width="500" height="500">canvas</canvas>
-	</div>
+	<div id="draw" style="width:500px; height:500px;"></div>
 	<div id="inputs">
 		<div class="group">
 			<label>UI</label>
@@ -102,7 +106,9 @@
 		</div>
 	</div>
 	<div id="outputs">
-		<div class="field"><label>step compute %</label><canvas id="scp" width="220px" height="50px" /></div>
+		<div class="field"><label>step compute %</label>
+			<div id="scp" style="width:220px;height:50px;display:inline-block;" />
+		</div>
 
 		<div class="field">
 			<label>time (s) (hr)</label><input id="t" readonly="true" /><input id="t_hr" readonly="true" />

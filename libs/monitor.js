@@ -4,12 +4,13 @@ let monitor = {
 		#monitorRatio = 0;
 		step = 0.1;
 
-		constructor({ id, step = 0.1 }) {
+		constructor({ containerId, step = 0.1 }) {
 			this.monitor = new draw.Drawing({
-				id: id
+				containerId: containerId
+				, autoClear: false
 				, initializeCallback: (ctx) => {
-					ctx.strokeStyle = "rgb(200, 0, 0)";
-					ctx.lineWidth = 1;
+					this.monitor.context.strokeStyle = "rgb(200, 0, 0)";
+					this.monitor.context.lineWidth = 1;
 				}
 			});
 			this.step = step;
@@ -26,6 +27,7 @@ let monitor = {
 		}
 
 		plotRatio(ratio) {
+			this.monitor.draw();
 			let m0 = this.#plotMonitor();
 			this.#monitorRatio = ratio;
 			new draw.Line({

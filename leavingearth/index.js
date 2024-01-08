@@ -7,13 +7,13 @@ main = new class {
 	});
 
 	//Drawing
-	monitorDrawing = new monitor.Drawing({ id: "scp" });
+	monitorDrawing = new monitor.Drawing({ containerId: "scp" });
 
 	drawing = new draw.Drawing({
-		id: "canvas"
-		, initializeCallback: (ctx) => {
-			ctx.fillStyle = "rgb(200, 0, 0)";
-			ctx.lineWidth = 1;
+		containerId: "draw"
+		, initializeCallback: () => {
+			this.drawing.context.fillStyle = "rgb(200, 0, 0)";
+			this.drawing.context.lineWidth = 1;
 		}
 	});
 
@@ -55,6 +55,8 @@ main = new class {
 	}
 
 	drawGrid() {
+		this.drawing.draw();
+
 		this.drawing.context.strokeStyle = "rgb(255,255, 255)";
 
 		let subdvision = 10;
