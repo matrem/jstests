@@ -2,6 +2,9 @@ let physx = {
 	// Physics object simulation
 	// store and update position/velocity/maxVelocity/acceleration
 	Object: class {
+		#lastAcceleration;
+		#lastDt;
+
 		constructor({ position, velocity, maxSpeed, acceleration, mass = 1 }) {
 			this.position = position;
 			this.velocity = velocity;
@@ -12,6 +15,18 @@ let physx = {
 
 		// update velocity and position from acceleration and dt using mid velocity for position (RungeKutta2)
 		update(dt) {
+			if (this.#lastAcceleration != undefined) { //Apply a correction on velocity and position by calculating the mean acceleration that should have been used instead of #lastAcceleration
+				let meanA = this.#lastAcceleration.mean(this.acceleration);
+				let dA = meanA.sub(this.#lastAcceleration);
+				if (dA.length2() != 0) {
+					let dV = dA.mul(this.#lastDt);
+					let dP = dV.mul(this.#lastDt);
+					this.position.add(dP);
+					this.velocity.add(dV);
+				}
+			}
+
+
 			let midDv = this.acceleration.mul(dt / 2.0);
 			let midV = this.velocity.add(midDv);
 			this.velocity = midV.add(midDv);
@@ -30,6 +45,8 @@ let physx = {
 
 			this.position = this.position.add(midV.mul(dt));
 
+			this.lastDt = dt;
+			this.#lastAcceleration = this.acceleration;
 			this.acceleration = this.acceleration.null();
 		}
 

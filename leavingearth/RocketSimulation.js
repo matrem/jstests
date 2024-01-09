@@ -1,15 +1,9 @@
 RocketSimulation = class extends physx.Simulation {
 	thrust_N = 0;
-	#dragCoeff = 0.75;
-	#sectionArea_m2 = 40;
 	lastAcceleration = 0;
-	#lastMass = 0;
-	#lastPosition;
-	#lastV;
 	planet;
 	stages;
 	#currentStage = 0;
-	#time_s = 0;
 
 	constructor({ planet }) {
 		super({ simulateCallback: undefined });
@@ -42,12 +36,6 @@ RocketSimulation = class extends physx.Simulation {
 		task.assertNAN(this.rocket.position.y);
 
 		this.computeCollision();
-	}
-
-	initLastParameters() {
-		this.#lastMass = this.rocket.mass;
-		this.#lastPosition = this.rocket.position;
-		this.#lastV = this.rocket.velocity;
 	}
 
 	reset({ initialSpeed_ms, initialAltitude_m, initialMass_kg, stageDescription, pitchDescription }) {
@@ -103,8 +91,6 @@ RocketSimulation = class extends physx.Simulation {
 				}
 			});
 		}
-
-		this.initLastParameters();
 	}
 
 	stagesComputation(dt_s) {
@@ -161,12 +147,6 @@ RocketSimulation = class extends physx.Simulation {
 
 	//Force integration using mid value for parameters
 	forceIntegration(dt_s) {
-		let midMass = (this.#lastMass + this.rocket.mass) / 2.0;
-		let midPosition = this.#lastPosition.mean(this.rocket.position);
-		let midV = this.#lastV.mean(this.rocket.velocity);
-
-		this.initLastParameters();
-
 		let force = new math.Vector(0, 0);
 
 		//Thrust
@@ -184,9 +164,9 @@ RocketSimulation = class extends physx.Simulation {
 
 		//Gravity
 		let g = physx.gravity({
-			m0: midMass
+			m0: this.rocket.mass
 			, m1: this.planet.mass_kg
-			, p0: midPosition
+			, p0: this.rocket.position
 			, p1: new math.Vector(0, 0)
 		})
 
@@ -197,11 +177,11 @@ RocketSimulation = class extends physx.Simulation {
 
 		if (this.dragCoeff > 0 && this.sectionArea_m2 > 0) {
 			let atmosphericDensity_kgpm3 = this.planet.atmosphericDensityFunc_m_kgpm3(
-				Math.max(midPosition.length() - this.planet.radius_m, 0)
+				Math.max(this.rocket.position.length() - this.planet.radius_m, 0)
 			);
 			drag = physx.drag({
 				fluidDendity_kgpm3: atmosphericDensity_kgpm3
-				, velocity_mps: midV
+				, velocity_mps: this.rocket.velocity
 				, dragCoeff: this.dragCoeff
 				, area_m2: this.sectionArea_m2
 			});

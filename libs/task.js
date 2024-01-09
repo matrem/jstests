@@ -29,7 +29,7 @@ let task = {
 			this.previousNow_ms = undefined;
 		}
 
-		#update() {
+		#update(timeStamp) {
 			const now_ms = window.performance.now();
 
 			if (this.started) {
@@ -38,10 +38,12 @@ let task = {
 
 					let dt_ms = now_ms - this.previousNow_ms;
 
-					this.updateCallback(dt_ms / 1e3);
+					if (dt_ms > 0) {
+						this.updateCallback(dt_ms / 1e3);
 
-					let duration_ms = window.performance.now() - now_ms;
-					if (this.updateEndCallback != undefined) this.updateEndCallback(dt_ms / 1e3, duration_ms / 1e3);
+						let duration_ms = window.performance.now() - now_ms;
+						if (this.updateEndCallback != undefined) this.updateEndCallback(dt_ms / 1e3, duration_ms / 1e3);
+					}
 				}
 				window.requestAnimationFrame(this.#update.bind(this));
 			}

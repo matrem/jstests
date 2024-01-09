@@ -158,14 +158,14 @@ templatechange = function () {
 
 	switch (main.ui.inputs.templates.value) {
 		case "escape":
-			main.ui.inputs.scaleX.value = 2e4;
-			main.ui.inputs.scaleY.value = 3e4;
-			main.ui.inputs.timeScale.value = 1e3;
-			main.ui.inputs.timeStep.value = 1e-2;
+			main.ui.inputs.scaleX.value = 25e4;
+			main.ui.inputs.scaleY.value = 50e4;
+			main.ui.inputs.timeScale.value = 10e3;
+			main.ui.inputs.timeStep.value = 1e-1;
 			main.ui.inputs.rocketMass.value = 1000e3;
 			main.ui.inputs.rocketSectionArea.value = 40;
 			main.ui.inputs.rocketDragCoeff.value = 0.75;
-			main.ui.inputs.s0.value = 11.5e3;
+			main.ui.inputs.s0.value = 13.5e3;
 			break;
 		case "catapult":
 			main.ui.inputs.scaleX.value = 20;
