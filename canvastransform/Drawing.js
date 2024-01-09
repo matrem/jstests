@@ -12,6 +12,11 @@ Drawing = class extends draw.TransformedDrawing {
 			, maxZoomIndex: 240
 		});
 		this.initialize();
+
+		this.eiffel = draw.loadImage("icons/eiffel.png", this.draw.bind(this));
+		this.human = draw.loadImage("icons/human.png", this.draw.bind(this));
+		this.rocket = draw.loadImage("icons/rocket.png", this.draw.bind(this));
+
 		this.draw();
 	}
 
@@ -59,13 +64,26 @@ Drawing = class extends draw.TransformedDrawing {
 		this.context.setTransform(transform);
 	}
 
+	drawImage(img, position, scale = 1) {
+		if (img.complete) {
+			position = this.transformToSmallWorld(position);
+			let transform = this.context.getTransform();
+			this.context.transform(scale, 0, 0, -scale, position.x, position.y);
+			this.context.drawImage(img, 0, 0);
+			this.context.setTransform(transform);
+		}
+	}
+
 	gravityActivated = false;
 	gravityDetected = false;
 	time_s = 0;
 
 	transformedDraw() {
-		this.drawCircle(new math.Vector(100, 50), 50, 3);
-		this.drawCircle(new math.Vector(0, 5), 5, 3);
+		this.drawImage(this.eiffel, new math.Vector(100, 330), 6.6);
+		this.drawImage(this.human, new math.Vector(265, 65), 0.02);
+		this.drawImage(this.human, new math.Vector(275, 65), 0.02);
+		this.drawImage(this.human, new math.Vector(285, 65), 0.02);
+		this.drawImage(this.rocket, new math.Vector(-32, 64), 1);
 
 		//Draw earth
 		let earthRadius = physx.earth.radius_m;
